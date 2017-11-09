@@ -1,0 +1,8 @@
+.DS_Store
+.git
+_ignore/
+json/
+openpose/
+movies_mp4/*.mp4
+movies_webm/*
+!movies_webm/.gitkeep
