@@ -1,5 +1,5 @@
-var Camera = function(){
-	this.playbackVideo;
+var Camera = function()
+{
 	this.localStream = null;
 	this.recorder =  null;
 	this.blobUrl = null;
@@ -15,7 +15,6 @@ var Camera = function(){
 }
 
 
-
 Camera.prototype.getMediaDeviceAvailable = function()
 {
 	navigator.mediaDevices = navigator.mediaDevices || ((navigator.mozGetUserMedia || navigator.webkitGetUserMedia) ? {
@@ -29,14 +28,20 @@ Camera.prototype.getMediaDeviceAvailable = function()
 	if (!navigator.mediaDevices) {
 		console.log("getUserMedia() not supported.");
 	}
-
 }
 
 
 Camera.prototype.startCamera = function()
 {
 	const that = this;
-	navigator.mediaDevices.getUserMedia({video: true, audio: false})
+	const constraints = {
+		video: {
+			width:  { min: 640, ideal: 640, max: 640 },
+			height: { min: 480, ideal: 480,  max: 480 }
+		},
+		audio: false
+	}
+	navigator.mediaDevices.getUserMedia(constraints)
 	.then(function (stream) { // success
 		that.localStream = stream;
 		that.localVideo.src = window.URL.createObjectURL(that.localStream);
@@ -74,31 +79,11 @@ Camera.prototype.startRecording = function()
 
 		that.msr.onstop = function(e)
 		{
-			console.log("stop");
+			// console.log("stop");
 			that.playRecordedChunks(chunks);
-
 			const blob = new Blob(chunks, { type: "video/webm" });
-
-			const reader = new FileReader();
-			reader.readAsDataURL(blob); 
-			reader.onloadend = function()
-			{
-				const formData = new FormData();
-				let base64 = reader.result;
-				base64 = base64.split(',')[1];
-
-				const filename = Date.now();
-				formData.append('filename', filename);
-				formData.append('blob', base64);
-
-				that.upload('analyze.php', formData, function (data) {
-					console.log(data);
-					const res = $.parseJSON(data);
-					console.log(res);
-					onAnalyzeEnd(res);
-				});
-			}	
 			clearInterval(that.countIntv);
+			that.onRecordEnd(blob);
 		};
 
 		that.msr.start(that.chunkDuration);
@@ -113,7 +98,11 @@ Camera.prototype.startRecording = function()
 	});
 }
 
-Camera.prototype.stopRecording = function() {
+Camera.prototype.onRecordEnd = function(blob){}
+
+
+Camera.prototype.stopRecording = function()
+{
 	this.msr.stop();
 	clearInterval(this.countIntv);
 }
@@ -137,78 +126,29 @@ Camera.prototype.countdown = function(duration, callback)
 }
 
 
-Camera.prototype.handleFiles = function(files)
-{
-	if(!(window.File && window.FileReader && window.FileList && window.Blob)){
-	 console.log("File API not fully supported.");
-	 return;
-	}
-
-	const that = this;
-	const file = files[0];
-	const reader = new FileReader();
-	reader.readAsDataURL(file);
-	reader.onloadend = function() {
-		const formData = new FormData();
-
-		let base64 = reader.result;
-		base64 = base64.split(',')[1];
-
-		const filename = file.name;
-
-		formData.append('filename', filename);
-		formData.append('blob', base64);
-
-		that.upload('analyze.php', formData, function (data) {
-			console.log(data);
-			const res = $.parseJSON(data);
-			onAnalyzeEnd(res);
-		});
-	}
-}
-
-
-Camera.prototype.upload = function(url, data, callback) {
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.onload = function(e) { };
-	request.onreadystatechange = function () {
-		if (request.readyState == 4 && request.status == 200) {
-			callback(request.responseText);
-		}
-	};
-	// request.upload.onprogress = function(e) {
-	// 	if (e.lengthComputable) {
-	// 		progressBar.value = (e.loaded / e.total) * 100;
-	// 	}
-	// };
-
-	request.send(data);
-}
-
 Camera.prototype.playRecordedChunks = function (chunks) {
 	const videoBlob = new Blob(chunks, { type: "video/webm" });
 	const url = window.URL.createObjectURL(videoBlob);
-	this.playRecorded(url);
+	this.playRecordedUrl(url);
 }
 
 Camera.prototype.playRecordedBlob = function(blob) {
 	const url = window.URL.createObjectURL(blob);
-	this.playRecorded(url);
+	this.playRecordedUrl(url);
 }
 
-Camera.prototype.playRecorded = function(url){
+Camera.prototype.playRecordedUrl = function(url){
 	if (this.playbackVideo.src) {
-		// window.URL.revokeObjectURL(playbackVideo.src); // 解放
-		// playbackVideo.src = null;
-		this.playbackVideo.play();
+		window.URL.revokeObjectURL(this.playbackVideo.src); // 解放
+		this.playbackVideo.src = null;
 	}
 	this.playbackVideo.src = url;
 	this.playbackVideo.loop = true;
-	this.playbackVideo.play();	
+	this.playbackVideo.play();
 }
 
-Camera.prototype.download = function(){//unused
+//---unused
+Camera.prototype.download = function(){
 	const anchor = document.getElementById('download_link');
 	anchor.download = 'recorded.webm'; // ファイル名
 	anchor.href = this.playbackVideo.src;
