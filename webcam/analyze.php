@@ -5,25 +5,26 @@
     $debug = false;
 
 	/*---save a POSTed file---*/
-	$filename = $_POST["filename"];
+	$fullfilename = $_POST["filename"];
     $blob64 = $_POST["blob"];
 	$blob = base64_decode($blob64);
     $inMovieFilePath =  dirname(__FILE__)."/movies_webm/";
     $outMovieFilePath = dirname(__FILE__)."/movies_mp4/";
 
-    $ext = pathinfo($filename, PATHINFO_EXTENSION);
-    echo "\n".$ext;
+    $filename = pathinfo($fullfilename, PATHINFO_FILENAME);
+    $ext      = pathinfo($fullfilename, PATHINFO_EXTENSION);
 
 	if($ext == "mp4"){
-		$outfilename = $outMovieFilePath.$filename;
-	    file_put_contents ($outMovieFilePath.$filename, $blob );
-	}else{
 		$outfilename = $outMovieFilePath.$filename.".mp4";
-		file_put_contents ($inMovieFilePath.$filename, $blob );
+	    file_put_contents ($outfilename, $blob );
+	}
+    else{
+		$outfilename = $outMovieFilePath.$filename.".mp4";
+		file_put_contents ($inMovieFilePath.$fullfilename, $blob );
 	    /*---convert to mp4---*/
 		//$ffmpeg = "/usr/local/bin/ffmpeg";
 		$ffmpeg =  dirname(__FILE__)."/apps/ffmpeg/bin/ffmpeg.exe";
-		$command = $ffmpeg." -i ".$inMovieFilePath.$filename." -vcodec libx264 -acodec libfaac -y ".$outfilename;
+		$command = $ffmpeg." -i ".$inMovieFilePath.$fullfilename." -vcodec libx264 -acodec libfaac -vf framerate=30 -y ".$outfilename;
 		$ret = system_ex($command);
 		printLog($ret);
 	}
@@ -40,7 +41,8 @@
 	$ret = system_ex($command);
 	printLog($ret);
 
-    $arr = array("filename"=>$filename);
+    $length = count(glob($jsondir."*.json"));
+    $arr = array("filename"=>$filename, "length"=>$length);
     echo json_encode($arr);
 
 
@@ -90,3 +92,4 @@
             'stderr' => $error_message,
             );
     }
+    

@@ -1,17 +1,22 @@
 var Camera = function()
 {
+	this.frameRate = 30;
+	this.videoDuration = 4000;
+	this.chunkDuration = 1000;
+
 	this.localStream = null;
 	this.recorder =  null;
 	this.blobUrl = null;
 	this.msr = null;
-	this.chunkDuration = 1000;
-	this.videoDuration = 4000;
+
 	this.countIntv;
-	
+	this.playbackPlayIntv;
 	this.localVideo = document.getElementById("local_video");
 	this.playbackVideo = document.getElementById("playback_video");
 
 	this.countdownDivId = "#recordingtime";
+
+	this.playbackFrame = 0;
 }
 
 
@@ -126,18 +131,22 @@ Camera.prototype.countdown = function(duration, callback)
 }
 
 
-Camera.prototype.playRecordedChunks = function (chunks) {
+Camera.prototype.playRecordedChunks = function (chunks)
+{
 	const videoBlob = new Blob(chunks, { type: "video/webm" });
 	const url = window.URL.createObjectURL(videoBlob);
 	this.playRecordedUrl(url);
 }
 
-Camera.prototype.playRecordedBlob = function(blob) {
+Camera.prototype.playRecordedBlob = function(blob)
+{
 	const url = window.URL.createObjectURL(blob);
 	this.playRecordedUrl(url);
 }
 
-Camera.prototype.playRecordedUrl = function(url){
+Camera.prototype.playRecordedUrl = function(url)
+{
+	const that = this;
 	if (this.playbackVideo.src) {
 		window.URL.revokeObjectURL(this.playbackVideo.src); // 解放
 		this.playbackVideo.src = null;
@@ -145,10 +154,26 @@ Camera.prototype.playRecordedUrl = function(url){
 	this.playbackVideo.src = url;
 	this.playbackVideo.loop = true;
 	this.playbackVideo.play();
+
+	/*more controlled but heavy*/	
+	// setInterval(function(){
+	// 	that.playbackVideo.currentTime = that.playbackFrame/30;
+	// 	that.playbackFrame++;
+	// 	if(that.playbackVideo.currentTime >= that.playbackVideo.duration){
+	// 		that.playbackFrame = 0;
+	// 	}
+	// },1000/30);
+}
+
+Camera.prototype.getCurrentFrame = function(video)
+{
+	//return  this.playbackFrame;
+	return Math.floor(video.currentTime * this.frameRate);
 }
 
 //---unused
-Camera.prototype.download = function(){
+Camera.prototype.download = function()
+{
 	const anchor = document.getElementById('download_link');
 	anchor.download = 'recorded.webm'; // ファイル名
 	anchor.href = this.playbackVideo.src;

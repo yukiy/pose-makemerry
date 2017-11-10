@@ -1,7 +1,51 @@
 let cam;
 let canvas;
-const isPostToServer = false;
+const isPostToServer = 1;
+const useTestFilename = 1;
+const testFilename = "test";
+const testFileLength = 120;
+const quickTest = 0;
 
+//---サーバーでの処理が終わるとこれが呼ばれる
+function onAnalyzeEnd(res)
+{
+	const name = res.filename;
+	const length = res.length;
+	let jsonarr = [];
+
+	//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
+	let countfile = 0;
+	var get = function(i){
+		const url = "./json/"+name+"/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
+		$.getJSON(url, function(res){
+			res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
+			jsonarr.push(res);
+			countfile++;
+			if(countfile < length){
+				get(countfile);
+			}
+		})		
+	}
+	get(countfile);
+
+	draw(jsonarr);
+}
+
+
+function draw(jsonarr)
+{
+	setInterval(function(){
+		const video = cam.playbackVideo;
+		const frameNum = cam.getCurrentFrame(video);
+		const json = jsonarr[frameNum];
+		canvas.drawVideo(video);
+		canvas.drawBones(json);
+		/*----------------
+		ここに描画関係を書いていく
+		--------------------*/
+
+	},1000/30);
+}
 
 //---0001234みたいに0で桁を合わせる用関数
 function zeroPadding(num, digit)
@@ -12,25 +56,6 @@ function zeroPadding(num, digit)
 	}
 	const numDigit = String(num).length;
 	return zeroStr.slice(numDigit) + num;
-}
-
-
-//---analyze.phpにPOSTしたあと、処理が終わるとこれが呼ばれる
-function onAnalyzeEnd(res)
-{
-	const name = res.filename;
-	const length = res.length;
-	let jsonarr = [];
-	for(let i=0; i<120; i++){
-	//for(let i=0; i<length; i++){
-		const url = "./json/"+name+"/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
-		$.getJSON(url, function(res){
-			jsonarr.push(res);
-		})
-	}
-	console.log(jsonarr);
-
-	canvas.drawVideo();
 }
 
 
@@ -87,7 +112,7 @@ function post(url, data, callback)
 
 		request.send(data);
 	}else{
-		callback('{"filename":"testJson","length":120}');
+		callback('{"filename":"'+testFilename+'","length":120}');
 	}
 }
 
@@ -122,7 +147,13 @@ function setEvent()
 			let base64 = reader.result;
 			base64 = base64.split(',')[1];
 
-			const filename = Date.now();
+			let filename;
+			if(useTestFilename){
+				filename = testFilename;				
+			}
+			else{
+				filename = Date.now();
+			}
 			formData.append('filename', filename);
 			formData.append('blob', base64);
 
@@ -141,4 +172,10 @@ $(function()
 	cam = new Camera();
 	canvas = new Draw();
 	setEvent();
+
+	if(quickTest){
+		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
+		onAnalyzeEnd($.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}'));
+	}
+
 })
