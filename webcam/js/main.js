@@ -1,184 +1,233 @@
-let playbackVideo;
-let localVideo;
-let localStream;
-let recorder =  null;
-let blobUrl = null;
-let msr;
-let duration = 3000;
+let cam;
+let canvas;
+const isPostToServer = 0;
+const useTestFilename = 1;
+const testFilename = "test1";
+const testFileLength = 120;
+const quickTest = 1;
 
-// start local video
-function startVideo() 
+//---サーバーでの処理が終わるとこれが呼ばれる
+function onAnalyzeEnd(res)
 {
-	navigator.mediaDevices.getUserMedia({video: true, audio: false})
-	.then(function (stream) { // success
-		localStream = stream;
-		localVideo.src = window.URL.createObjectURL(localStream);
-	})
-	.catch(function (error) { // error
-		console.error('mediaDevice.getUserMedia() error:', error);
-		return;
-	});
+/*
+	const name = res.filename;
+	const length = res.length;
+	let jsonarr = [];
+
+	//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
+	let countfile = 0;
+	var get = function(i){
+		const url = "./json/"+name+"/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
+		$.getJSON(url, function(res){
+			res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
+			jsonarr.push(res);
+			countfile++;
+			if(countfile < length){
+				get(countfile);
+			}
+		})		
+	}
+	get(countfile);
+
+	draw(jsonarr);
+*/
+
+	console.log(res);
+	draw(res.frame);
 }
 
 
-function startRecording() 
+function draw(jsonarr)
 {
-	navigator.getUserMedia({ video: true, audio: false }, onMediaSuccess, onMediaError);
+	setInterval(function(){
+		const video = cam.playbackVideo;
+		const frameNum = cam.getCurrentFrame(video);
+		const json = jsonarr[frameNum];
+		canvas.drawVideo(video);
+		canvas.drawBones(json);
+		canvas.drawHead(json);
+		/*----------------
+		ここに描画関係を書いていくn
+		--------------------*/
 
-	function onMediaSuccess(stream) {
-		localStream = stream;
-		localVideo.src = window.URL.createObjectURL(localStream);
-		let chunks = [];
+	},1000/30);
+}
 
-		// if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-		//   options.mimeType =  'video/webm; codecs=vp9'};
-		// }
-
-		// const options = {
-		// 	videoBitsPerSecond : 512000, // 512kbits / sec
-		// 	mimeType : 'video/webm;codecs=vp9'
-		// };
-
-		// recorder = new MediaRecorder(stream, options);
-
-		// recorder.ondataavailable = function(evt) {
-		// 	chunks.push(evt.data);
-		// };
-
-		// recorder.onstop = function(evt) {
-		// 	recorder = null;
-		// 	playRecorded(chunks);
-		// 	let formData = new FormData();
-		// 	formData.append('filename', 'test.webm');
-		// 	formData.append('chunks', chunks);
-		// 	console.log(formData);
-		// 	upload('upload.php', formData, function (data) {
-		// 		console.log(data);
-		// 	});
-		// 	// let videoBlob = new Blob(chunks, { type: "video/webm" });
-		// 	// upload('upload.php', videoBlob, function(data){
-		// 	// 	console.log(data);
-		// 	// });
-		// };
-
-		// recorder.start(1000); // 1000ms 毎に録画データを区切る
+//---0001234みたいに0で桁を合わせる用関数
+function zeroPadding(num, digit)
+{
+	let zeroStr = "";
+	for(let i=0;i<digit;i++){
+		zeroStr += "0";
+	}
+	const numDigit = String(num).length;
+	return zeroStr.slice(numDigit) + num;
+}
 
 
-	    msr = new MediaStreamRecorder(stream);
-    	msr.mimeType = 'video/webm';
+//---カメラを使わず、ファイルを選んで直接アップロードするとき
+function uploadFile(files)
+{
+	if(!(window.File && window.FileReader && window.FileList && window.Blob)){
+	 console.log("File API not fully supported.");
+	 return;
+	}
 
-		msr.ondataavailable = function (blob) {
+	const file = files[0];
+	const reader = new FileReader();
+	reader.readAsDataURL(file);
+	reader.onloadend = function() {
 
-			var reader = new FileReader();
-			reader.readAsDataURL(blob); 
-			reader.onloadend = function() {
-				base64 = reader.result;
-				base64 = base64.split(',')[1];
+		cam.playRecordedBlob(file);
+		cam.playbackVideo.volume = 0;
 
-				let formData = new FormData();
-				formData.append('filename', 'test.webm');
-				formData.append('blob', base64);
+		const formData = new FormData();
 
-				upload('upload.php', formData, function (data) {
-					console.log(data);
-				});
-				msr.stop();
-				playRecordedBlob(blob);
+		let base64 = reader.result;
+		base64 = base64.split(',')[1];
 
+		const filename = file.name;
+
+		formData.append('filename', filename);
+		formData.append('blob', base64);
+
+		post('analyze.php', formData, function (data) {
+			onAnalyzeEnd($.parseJSON(data));
+		});
+	}
+}
+
+
+//---POSTする関数、ただし、isPostToServerがfalseのときは、POSTしないでサンプルデータを返す
+function post(url, data, callback)
+{
+	if(isPostToServer){
+		var request = new XMLHttpRequest();
+		request.open('POST', url, true);
+		request.onload = function(e) { };
+		request.onreadystatechange = function () {
+			if (request.readyState == 4 && request.status == 200) {
+				callback(request.responseText);
 			}
 		};
-
-
-		// msr.ondataavailable = function(evt) {
-		// 	chunks.push(evt);
+		// request.post.onprogress = function(e) {
+		// 	if (e.lengthComputable) {
+		// 		progressBar.value = (e.loaded / e.total) * 100;
+		// 	}
 		// };
 
-		// msr.onstop = function(evt) {
-		// 	playRecorded(chunks);
-		// 	let formData = new FormData();
-		// 	formData.append('filename', 'test.webm');
-		// 	formData.append('blob', chunks);
-		// 	upload('upload.php', formData, function (data) {
-		// 		console.log(data);
-		// 	});
-		// 	// let videoBlob = new Blob(chunks, { type: "video/webm" });
-		// 	// upload('upload.php', videoBlob, function(data){
-		// 	// 	console.log(data);
-		// 	// });
-		// };
-
-		msr.start(duration);
-	}
-
-	function onMediaError(error){
-		console.error('mediaDevice.getUserMedia() error:', error);
-		return;
+		request.send(data);
+	}else{
+		callback('{"filename":"'+testFilename+'","length":120}');
 	}
 }
- 
 
 
-function upload(url, data, callback) {
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.onload = function(e) { };
-	request.onreadystatechange = function () {
-		if (request.readyState == 4 && request.status == 200) {
-			callback(location.href + request.responseText);
+function setEvent()
+{
+	$("#start_btn").click(function(){
+		cam.startCamera();
+	});
+
+	$("#rec_btn").click(function(){
+		cam.startRecording();
+	});
+
+	$("#recstop_btn").click(function(){
+		cam.stopRecording();
+	});
+
+	$("#upload_file").on("change", function(){
+		uploadFile(this.files);
+	});
+
+	//---Cameraでのレコーディングが終わるとこれが呼ばれる
+	cam.onRecordEnd = function(blob)
+	{
+		console.log("record end.");
+		const reader = new FileReader();
+		reader.readAsDataURL(blob); 
+		reader.onloadend = function()
+		{
+			const formData = new FormData();
+			let base64 = reader.result;
+			base64 = base64.split(',')[1];
+
+			let filename;
+			if(useTestFilename){
+				filename = testFilename;				
+			}
+			else{
+				filename = Date.now();
+			}
+			formData.append('filename', filename);
+			formData.append('blob', base64);
+
+			post('analyze.php', formData, function (data) {
+				console.log(data);
+				onAnalyzeEnd($.parseJSON(data));
+			});				
 		}
-	};
-	// Listen to the upload progress.
-	// var progressBar = document.querySelector('progress');
-	// request.upload.onprogress = function(e) {
-	// 	if (e.lengthComputable) {
-	// 		progressBar.value = (e.loaded / e.total) * 100;
-	// 		progressBar.textContent = progressBar.value; // Fallback for unsupported browsers.
-	// 	}
-	// };
-
-	request.send(data);
-}
-
-
-function stopRecording() {
-	msr.stop();
-}
-
-function playRecordedChunks(chunks) {
-	const videoBlob = new Blob(chunks, { type: "video/webm" });
-	blobUrl = window.URL.createObjectURL(videoBlob);
-
-	if (playbackVideo.src) {
-		// window.URL.revokeObjectURL(playbackVideo.src); // 解放
-		// playbackVideo.src = null;
-		playbackVideo.play();
 	}
-	playbackVideo.src = blobUrl;
-	playbackVideo.play();
 }
 
-function playRecordedBlob(blob) {
-	blobUrl = window.URL.createObjectURL(blob);
 
-	if (playbackVideo.src) {
-		// window.URL.revokeObjectURL(playbackVideo.src); // 解放
-		// playbackVideo.src = null;
-		playbackVideo.play();
+function createCanvas(id, w, h, targetId)
+{
+	let target = document.getElementById(targetId);
+	let canvas = document.createElement("canvas");
+	canvas.id = id;
+	canvas.width = w;
+	canvas.height = h;
+	target.appendChild(canvas);
+}
+
+
+$(function()
+{
+	cam = new Camera();
+
+	createCanvas("canvas", 320, 240, "previewArea");
+	canvas = new Draw("canvas");
+	setEvent();
+
+	if(quickTest){
+		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
+		cam.playbackVideo.volume = 0;
+		//onAnalyzeEnd($.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}'));
+		// $.getJSON("./json/"+testFilename+"/"+testFilename+"_angle.json",function(res){
+		// 	onAnalyzeEnd(res);
+		// })
+
+		$.ajax({
+			url:"./json/"+testFilename+"/"+testFilename+"_angle.json",
+			type: "get",
+			success: function(res){
+				console.log(res);
+				onAnalyzeEnd($.parseJSON(res));
+				//console.log($.parseJSON(res));
+			},
+			error: function(e){
+				console.log(e);
+			}
+		})
+
 	}
-	playbackVideo.src = blobUrl;
-	playbackVideo.play();
-}
 
+	//test();
 
-
-function download(){
-	const anchor = document.getElementById('download_link');
-	anchor.download = 'recorded.webm'; // ファイル名
-	anchor.href = blobUrl; // createObjecURL()で生成したURL
-}
-
-$(function(){
-	playbackVideo = document.getElementById('playback_video');
-	localVideo = document.getElementById('local_video');
 })
+
+
+let merrymen = [];
+function test ()
+{
+	for(let i=0; i<5; i++){
+		let merryman = new MerryMan("cvs"+i, 160, 120, "canvasArea"); 
+		merrymen.push(merryman);
+	}
+	//merrymen[0].getJson("./json/test/test_angle.json");
+	merrymen[1].getJson("./json/test1/test1_angle.json");
+	merrymen[2].getJson("./json/test2/test2_angle.json");
+}
 
