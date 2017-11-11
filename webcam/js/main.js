@@ -5,35 +5,37 @@ const useTestFilename = 1;
 const testFilename = "test3";
 const testFileLength = 120;
 const quickTest = 0;
+const isAngleJson = false;
 
 //---サーバーでの処理が終わるとこれが呼ばれる
 function onAnalyzeEnd(res)
 {
-/*
-	const name = res.filename;
-	const length = res.length;
-	let jsonarr = [];
-
-	//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
-	let countfile = 0;
-	var get = function(i){
-		const url = "./json/"+name+"/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
-		$.getJSON(url, function(res){
-			res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
-			jsonarr.push(res);
-			countfile++;
-			if(countfile < length){
-				get(countfile);
-			}
-		})		
+	if(isAngleJson){
+		console.log(res);
+		draw(res.frame);
 	}
-	get(countfile);
+	else{
+		const name = res.filename;
+		const length = res.length;
+		let jsonarr = [];
 
-	draw(jsonarr);
-*/
+		//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
+		let countfile = 0;
+		var get = function(i){
+			const url = "./json/"+name+"/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
+			$.getJSON(url, function(res){
+				res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
+				jsonarr.push(res);
+				countfile++;
+				if(countfile < length){
+					get(countfile);
+				}
+			})		
+		}
+		get(countfile);
 
-	console.log(res);
-	draw(res.frame);
+		draw(jsonarr);
+	}
 }
 
 
