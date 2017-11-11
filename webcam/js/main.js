@@ -2,13 +2,14 @@ let cam;
 let canvas;
 const isPostToServer = 1;
 const useTestFilename = 1;
-const testFilename = "test";
+const testFilename = "test3";
 const testFileLength = 120;
 const quickTest = 0;
 
 //---サーバーでの処理が終わるとこれが呼ばれる
 function onAnalyzeEnd(res)
 {
+/*
 	const name = res.filename;
 	const length = res.length;
 	let jsonarr = [];
@@ -29,6 +30,10 @@ function onAnalyzeEnd(res)
 	get(countfile);
 
 	draw(jsonarr);
+*/
+
+	console.log(res);
+	draw(res.frame);
 }
 
 
@@ -41,7 +46,7 @@ function draw(jsonarr)
 		canvas.drawVideo(video);
 		canvas.drawBones(json);
 		/*----------------
-		ここに描画関係を書いていく
+		ここに描画関係を書いていくn
 		--------------------*/
 
 	},1000/30);
@@ -73,6 +78,7 @@ function uploadFile(files)
 	reader.onloadend = function() {
 
 		cam.playRecordedBlob(file);
+		cam.playbackVideo.volume = 0;
 
 		const formData = new FormData();
 
@@ -85,7 +91,6 @@ function uploadFile(files)
 		formData.append('blob', base64);
 
 		post('analyze.php', formData, function (data) {
-			console.log(data);
 			onAnalyzeEnd($.parseJSON(data));
 		});
 	}
@@ -163,19 +168,47 @@ function setEvent()
 			});				
 		}
 	}
+}
 
+
+function createCanvas(id, w, h, targetId)
+{
+	let target = document.getElementById(targetId);
+	let canvas = document.createElement("canvas");
+	canvas.id = id;
+	canvas.width = w;
+	canvas.height = h;
+	target.appendChild(canvas);
 }
 
 
 $(function()
 {
 	cam = new Camera();
-	canvas = new Draw();
+
+	createCanvas("canvas", 320, 240, "previewArea");
+	canvas = new Draw("canvas");
 	setEvent();
 
 	if(quickTest){
 		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
+		cam.playbackVideo.volume = 0;
 		onAnalyzeEnd($.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}'));
 	}
 
+	//test();
+
 })
+
+
+let merrymen = [];
+function test ()
+{
+	for(let i=0; i<5; i++){
+		let merryman = new MerryMan("cvs"+i, 160, 120, "canvasArea"); 
+		merrymen.push(merryman);
+	}
+	//merrymen[0].getJson("./json/test/test_angle.json");
+	merrymen[1].getJson("./json/test1/test1_angle.json");
+	merrymen[2].getJson("./json/test2/test2_angle.json");
+}

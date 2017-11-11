@@ -36,14 +36,28 @@
 	//---openpose
 	chdir(dirname(__FILE__)."/apps/openpose/bin");
 	$openpose = "OpenPoseDemo.exe";
-	$command = $openpose." --keypoint_scale 3 --write_keypoint_json ".$jsondir." --video ".$outfilename;
-	printLog($command);
+	$command = $openpose." --keypoint_scale 3 --write_keypoint_json ".$jsondir."original/ --video ".$outfilename;
 	$ret = system_ex($command);
 	printLog($ret);
 
-    $length = count(glob($jsondir."*.json"));
-    $arr = array("filename"=>$filename, "length"=>$length);
-    echo json_encode($arr);
+    //---convert
+    chdir(dirname(__FILE__)."/apps/Convert2AngleJSON/bin");
+    $converter = "Convert2AngleJson.exe";
+    $command = $converter." ".$jsondir."original/ ".$jsondir.$filename."_angle.json";
+    //$ret = system_ex($command);
+    system_ex($command);
+
+    // //---response
+    $angleJson = file_get_contents($jsondir.$filename."_angle.json");
+    //$angleJson = mb_convert_encoding($angleJson, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
+    echo $angleJson;
+
+    /*---return original---*/
+    //$length = count(glob($jsondir."*.json"));
+    //$arr = array("filename"=>$filename, "length"=>$length);
+    //echo json_encode($arr);
+    /*----------------------*/
+
 
 
 

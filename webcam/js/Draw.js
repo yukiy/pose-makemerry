@@ -1,18 +1,24 @@
-var Draw = function()
+var Draw = function(id)
 {
-	this.cvs = document.getElementById("canvas");
+	this.cvs = document.getElementById(id);
+	this.id = id;
 	this.width = this.getWidth();
 	this.height = this.getHeight();
 	this.cvs.width = this.width;
 	this.cvs.height = this.height;
 	this.ctx = this.cvs.getContext("2d");
+	this.background = "TRANSPARENT";
+}
+
+Draw.prototype.clear = function(){
+	this.ctx.clearRect(0, 0, this.width, this.height);
 }
 
 Draw.prototype.getWidth = function(){
-	return $("#canvas").width();
+	return $("#"+this.id).width();
 }
 Draw.prototype.getHeight = function(){
-	return $("#canvas").height();
+	return $("#"+this.id).height();
 }
 
 Draw.prototype.drawVideo = function(video)
