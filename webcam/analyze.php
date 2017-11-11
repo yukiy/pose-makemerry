@@ -1,8 +1,9 @@
 <?php
-
+    include 'ChromePhp.php';
 	setlocale(LC_ALL, "en_US.UTF-8");
     ini_set( 'display_errors', 0);
     $debug = false;
+    $isAngleJson = false;
 
 	/*---save a POSTed file---*/
 	$fullfilename = $_POST["filename"];
@@ -26,38 +27,43 @@
 		$ffmpeg =  dirname(__FILE__)."/apps/ffmpeg/bin/ffmpeg.exe";
 		$command = $ffmpeg." -i ".$inMovieFilePath.$fullfilename." -vcodec libx264 -acodec libfaac -vf framerate=30 -y ".$outfilename;
 		$ret = system_ex($command);
-		printLog($ret);
+		//printLog($ret);
 	}
 
 	//---prepare Json folder
 	$jsondir = dirname(__FILE__)."/json/".$filename."/";
-	mkdir($jsondir, 0777, true);
-
+    if(!is_dir($jsondir)){
+	   mkdir($jsondir, 0777, true);
+    }
 	//---openpose
 	chdir(dirname(__FILE__)."/apps/openpose/bin");
 	$openpose = "OpenPoseDemo.exe";
-	$command = $openpose." --keypoint_scale 3 --write_keypoint_json ".$jsondir."original/ --video ".$outfilename;
+	$command = $openpose." --resolution 800x600 --keypoint_scale 3 --write_keypoint_json ".$jsondir."original/ --video ".$outfilename;
 	$ret = system_ex($command);
-	printLog($ret);
+	//printLog($ret);
 
-    //---convert
-    chdir(dirname(__FILE__)."/apps/Convert2AngleJSON/bin");
-    $converter = "Convert2AngleJson.exe";
-    $command = $converter." ".$jsondir."original/ ".$jsondir.$filename."_angle.json";
-    //$ret = system_ex($command);
-    system_ex($command);
+    //---return json
+    // if(isAngleJson){
+    //     //---convert
+    //     chdir(dirname(__FILE__)."/apps/Convert2AngleJSON/bin");
+    //     $converter = "Convert2AngleJson.exe";
+    //     $command = $converter." ".$jsondir."original/ ".$jsondir.$filename."_angle.json";
+    //     //$ret = system_ex($command);
+    //     system_ex($command);
 
-    // //---response
-    $angleJson = file_get_contents($jsondir.$filename."_angle.json");
-    //$angleJson = mb_convert_encoding($angleJson, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
-    echo $angleJson;
+    //     // //---response
+    //     $angleJson = file_get_contents($jsondir.$filename."_angle.json");
+    //     //$angleJson = mb_convert_encoding($angleJson, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
+    //     echo ($angleJson);        
+    // }
+    // else{
+        //---return original
+        $length = count(glob($jsondir."original/*.json"));
+        $arr = array("filename"=>$filename, "length"=>$length);
+        echo(json_encode($arr));
+    // }
 
-    /*---return original---*/
-    //$length = count(glob($jsondir."*.json"));
-    //$arr = array("filename"=>$filename, "length"=>$length);
-    //echo json_encode($arr);
-    /*----------------------*/
-
+    // echo("nothing");
 
 
 

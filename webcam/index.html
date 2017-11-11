@@ -10,17 +10,30 @@
 	<script src="./js/MerryMan.js" type="text/javascript"></script>
 	<script src="./js/main.js" type="text/javascript"></script>
 </head>
+
 <body>
 	<button id="start_btn">Start</button>
 	<button id="rec_btn">Rec</button>
-	<button id="recstop_btn">RecStop</button>
+<!-- 	<button id="recstop_btn">RecStop</button>
+ --><!-- 	<input type="file" id="upload_file"/> -->
 	<br />
 	<div id="previewArea">
-		<video id="local_video" autoplay></video>
-		<video id="playback_video"></video>
+		<table>
+		<tr>
+			<td class="lives">Live</td>
+			<td class="recs">Recorded</td>
+			<td>Pose</td>
+			<td>Effect</td>
+		</tr>
+		<tr>
+			<td class="lives"><video id="local_video" autoplay></video></td>
+			<td class="recs"><video id="playback_video"></video></td>
+			<td id="resultViewTd"></td>
+			<td id="effectViewTd"></td>
+		</tr>
+	</table>
 	</div>
 	<div id="recordingtime"></div>
-	<input type="file" id="upload_file"/>
 
 	<div id="canvasArea"></div>
 

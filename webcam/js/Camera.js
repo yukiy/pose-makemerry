@@ -92,7 +92,7 @@ Camera.prototype.startRecording = function()
 		};
 
 		that.msr.start(that.chunkDuration);
-
+		console.log("rec");
 		let count = 0;
 		$(that.countdownDivId).html(count); 
 		that.countIntv = setInterval( function(){
@@ -122,6 +122,7 @@ Camera.prototype.countdown = function(duration, callback)
 	const cntDwnIntv = setInterval(function(){
 		//console.log(duration-count);
 		$(that.countdownDivId).html(duration - count); 
+		console.log(duration - count);
 		count++;
 		if(count > duration){
 			clearInterval(cntDwnIntv);

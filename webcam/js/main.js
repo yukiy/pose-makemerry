@@ -1,11 +1,12 @@
 let cam;
 let canvas;
-const isPostToServer = 1;
-const useTestFilename = 1;
-const testFilename = "test3";
+let effect;
+const quickTest = true;
+const isPostToServer = false;
+const isAngleJson = true;
+const useTestFilename = true;
+const testFilename = "test1";
 const testFileLength = 120;
-const quickTest = 0;
-const isAngleJson = false;
 
 //---サーバーでの処理が終わるとこれが呼ばれる
 function onAnalyzeEnd(res)
@@ -22,8 +23,9 @@ function onAnalyzeEnd(res)
 		//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
 		let countfile = 0;
 		var get = function(i){
-			const url = "./json/"+name+"/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
+			const url = "./json/"+name+"/original/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
 			$.getJSON(url, function(res){
+				if(res && res.people && res.people[0]) console.log(res.people[0]);
 				res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
 				jsonarr.push(res);
 				countfile++;
@@ -33,7 +35,6 @@ function onAnalyzeEnd(res)
 			})		
 		}
 		get(countfile);
-
 		draw(jsonarr);
 	}
 }
@@ -45,8 +46,15 @@ function draw(jsonarr)
 		const video = cam.playbackVideo;
 		const frameNum = cam.getCurrentFrame(video);
 		const json = jsonarr[frameNum];
-		canvas.drawVideo(video);
+		//canvas.drawVideo(video);
+		canvas.drawBackground("rgb(100,100,100)");
 		canvas.drawBones(json);
+		//canvas.drawHead(json);
+		effect.drawVideo(video);
+		effect.drawBones(json);
+		effect.drawHead(json);
+
+
 		/*----------------
 		ここに描画関係を書いていくn
 		--------------------*/
@@ -93,6 +101,7 @@ function uploadFile(files)
 		formData.append('blob', base64);
 
 		post('analyze.php', formData, function (data) {
+			console.log("analyze end.");
 			onAnalyzeEnd($.parseJSON(data));
 		});
 	}
@@ -147,7 +156,9 @@ function setEvent()
 	{
 		console.log("record end.");
 		const reader = new FileReader();
-		reader.readAsDataURL(blob); 
+		reader.readAsDataURL(blob);
+		$(".lives").hide();
+		$(".recs").show();
 		reader.onloadend = function()
 		{
 			const formData = new FormData();
@@ -165,6 +176,7 @@ function setEvent()
 			formData.append('blob', base64);
 
 			post('analyze.php', formData, function (data) {
+				console.log("analyze end.");
 				console.log(data);
 				onAnalyzeEnd($.parseJSON(data));
 			});				
@@ -186,16 +198,44 @@ function createCanvas(id, w, h, targetId)
 
 $(function()
 {
+	$(".recs").hide();
 	cam = new Camera();
 
-	createCanvas("canvas", 320, 240, "previewArea");
+	createCanvas("canvas", 320, 240, "resultViewTd");
 	canvas = new Draw("canvas");
+
+	createCanvas("effect", 320, 240, "effectViewTd");
+	effect = new Draw("effect");
+
 	setEvent();
 
 	if(quickTest){
+		$(".lives").hide();
+		$(".recs").show();
 		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
 		cam.playbackVideo.volume = 0;
-		onAnalyzeEnd($.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}'));
+		if(isAngleJson){
+			$.getJSON("./json/"+testFilename+"/"+testFilename+"_angle.json", function(res){
+				onAnalyzeEnd(res);
+			})
+		}else{
+			onAnalyzeEnd($.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}'));			
+		}
+
+
+		// $.ajax({
+		// 	url:"./json/"+testFilename+"/"+testFilename+"_angle.json",
+		// 	type: "get",
+		// 	success: function(res){
+		// 		console.log(res);
+		// 		onAnalyzeEnd($.parseJSON(res));
+		// 		//console.log($.parseJSON(res));
+		// 	},
+		// 	error: function(e){
+		// 		console.log(e);
+		// 	}
+		// })
+
 	}
 
 	//test();
@@ -214,3 +254,4 @@ function test ()
 	merrymen[1].getJson("./json/test1/test1_angle.json");
 	merrymen[2].getJson("./json/test2/test2_angle.json");
 }
+
