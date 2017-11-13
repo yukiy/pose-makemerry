@@ -7,6 +7,7 @@ const isAngleJson = true;
 const useTestFilename = true;
 const testFilename = "test1";
 const testFileLength = 120;
+let globalFrameCount = 0;
 
 //---サーバーでの処理が終わるとこれが呼ばれる
 function onAnalyzeEnd(res)
@@ -42,23 +43,47 @@ function onAnalyzeEnd(res)
 
 function draw(jsonarr)
 {
-	setInterval(function(){
+	setInterval(function()
+	{
 		const video = cam.playbackVideo;
 		const frameNum = cam.getCurrentFrame(video);
 		const json = jsonarr[frameNum];
 		//canvas.drawVideo(video);
 		canvas.drawBackground("rgb(100,100,100)");
-		canvas.drawBones(json);
-		//canvas.drawHead(json);
 		effect.drawVideo(video);
-		effect.drawBones(json);
-		effect.drawHead(json);
 
+		const people = json.people;
+		if(people.length > 0){
+			canvas.setPeople(people);
+			effect.setPeople(people);
+			for (let i=0; i<canvas.people.length; i++){
+	    		const keypoints = canvas.people[i].pose_keypoints;
+				canvas.effect.drawBones(keypoints);
+				effect.effect.drawBones(keypoints);
 
-		/*----------------
-		ここに描画関係を書いていくn
-		--------------------*/
+				effect.effect.drawHead(keypoints, "./img/stamps/emojismile.png", 30, 30);
 
+				effect.effect.drawTraceLine(keypoints, 4, {
+					color:"rgba(255,0,180, 0.8)", 
+					lineWidth:1, 
+					length:50
+				});
+
+				// effect.effect.traceNeighborLine(keypoints, 4, {
+				// 	color:"rgba(255,0,180, 0.8)", 
+				// 	lineWidth:1, 
+				// 	length:50
+				// });
+
+				effect.effect.drawTraceCircle(keypoints, 7, {
+					color:"rgba(255,255,230, 0.5)", 
+					radius:10, 
+					length:20
+				});
+
+			}
+		}
+		globalFrameCount++;
 	},1000/30);
 }
 
