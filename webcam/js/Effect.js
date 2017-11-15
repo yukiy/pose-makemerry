@@ -78,33 +78,68 @@ Effect.prototype.drawLine = function(keypoints, partsId1, partsId2, col)
 }
 
 
-Effect.prototype.drawHead = function(keypoints, imgsrc, width, height)
+Effect.prototype.drawImageOnParts = function(keypoints, partsName, imgsrc, width, height, plusAngle=0)
 {
-	this.drawImage(keypoints, 0, imgsrc, width, height);
+	let partsId;
+	let imgMode;
+
+	if(partsName.toUpperCase() == "HEAD"){
+		partsId = 0;
+		imgMode = "CENTER"
+	}
+	if(partsName.toUpperCase() == "LEFT_HAND"){
+		partsId = 7;
+		imgMode = "BOTTOM"
+	}
+	if(partsName.toUpperCase() == "RIGHT_HAND"){
+		partsId = 4;
+		imgMode = "BOTTOM"
+	}
+	if(partsName.toUpperCase() == "LEFT_FOOT"){
+		partsId = 13;
+		imgMode = "CENTER"
+	}
+	if(partsName.toUpperCase() == "RIGHT_FOOT"){
+		partsId = 10;
+		imgMode = "CENTER"
+	}
+
+	this.drawImage(keypoints, partsId, imgsrc, width, height, imgMode, plusAngle);
 }
 
-Effect.prototype.drawImage = function(keypoints, partsId, imgsrc, width, height)
+Effect.prototype.drawImage = function(keypoints, partsId, imgsrc, width, height, imgMode, plusAngle=0)
 {
 	if (keypoints.length > 0)
 	{
 		const p = partsId*3;
 		const x = keypoints[p];
 		const y = keypoints[p+1];
-		const c = keypoints[p+2];
+		let offsetX;
+		let offsetY;
+		if(imgMode == "CENTER"){
+				offsetX = width/2;
+				offsetY = height/2;
+			}
+			if(imgMode == "BOTTOM"){
+				offsetX = width/2;
+				offsetY = height;
+			}
+			if(imgMode == "TOP"){
+				offsetX = width/2;
+				offsetY = 0;
+			}
 	
 		if (x>0 && y>0 && x>0 && y>0) {
 			const img = new Image();
 			img.src = imgsrc;
-			img.width = 30;
-			img.height = 30;
+			img.width = width;
+			img.height = height;
 
-//			this.ctx.translate(x*this.width-img.width/2, y*this.height-img.height/2);
-//			this.ctx.rotate(angleInRadians);
-//			this.ctx.drawImage(image, -width / 2, -height / 2, width, height);
-//			this.ctx.rotate(-angleInRadians);
-//			this.ctx.translate(-x, -y);
-
-			this.ctx.drawImage(img, x*this.width-img.width/2, y*this.height-img.height/2, img.width, img.height);
+			this.ctx.save();
+			this.ctx.translate(x*this.width, y*this.height);
+			this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180));
+			this.ctx.drawImage(img, 0-offsetX, 0-offsetY, width, height);
+			this.ctx.restore();
 		}
 	}
 }
@@ -266,4 +301,52 @@ Effect.prototype.traceNeighborLine = function(keypoints, partsId, options)
 			}
 		}
 	}
+}
+
+
+
+Effect.prototype.getAnngleFromKeypoints = function(keypoints, partsId1, mode)
+{
+	let partsId2;
+	if(partsId1 == 0) partsId2 = 1;
+	if(partsId1 == 1) partsId2 = 1;
+	if(partsId1 == 2) partsId2 = 1;
+	if(partsId1 == 3) partsId2 = 2;
+	if(partsId1 == 4) partsId2 = 3;
+
+	if(partsId1 == 5) partsId2 = 1;
+	if(partsId1 == 6) partsId2 = 5;
+	if(partsId1 == 7) partsId2 = 6;
+
+	if(partsId1 == 8) partsId2 = 1;
+	if(partsId1 == 9) partsId2 = 8;
+	if(partsId1 == 10) partsId2 = 9;
+
+	if(partsId1 == 11) partsId2 = 1;
+	if(partsId1 == 12) partsId2 = 11;
+	if(partsId1 == 13) partsId2 = 12;
+
+	const p1 = partsId1*3;
+	const x1 = keypoints[p1];
+	const y1 = keypoints[p1+1];
+	const p2 = partsId2*3;
+	const x2 = keypoints[p2];
+	const y2 = keypoints[p2+1];
+
+	const vec1 = { x:x2, y:y2 };
+	const vec2 = { x:x1, y:y1 };
+	return this.getAngle(vec1, vec2, mode);
+}
+
+
+Effect.prototype.getAngle = function(p1, p2, mode="RADIANS")
+{
+	if(mode == "RADIANS"){
+		return Math.atan2(p2.y-p1.y, p2.x-p1.x) + (90*Math.PI/180);
+	}
+
+	if(mode == "DEGREES"){
+		return  Math.atan2(p2.y-p1.y, p2.x-p1.x) * 180 / Math.PI + (90*Math.PI/180);
+	}
+	return;
 }

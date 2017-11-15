@@ -23,9 +23,9 @@
 		$outfilename = $outMovieFilePath.$filename.".mp4";
 		file_put_contents ($inMovieFilePath.$fullfilename, $blob );
 	    /*---convert to mp4---*/
-		//$ffmpeg = "/usr/local/bin/ffmpeg";
 		$ffmpeg =  dirname(__FILE__)."/apps/ffmpeg/bin/ffmpeg.exe";
-		$command = $ffmpeg." -i ".$inMovieFilePath.$fullfilename." -vcodec libx264 -acodec libfaac -vf framerate=30 -y ".$outfilename;
+        $ffmpegOpt =  " -c:v libx264 -c:a aac -vf framerate=30 ";
+		$command = $ffmpeg." -i ".$inMovieFilePath.$fullfilename.$ffmpegOpt." -y ".$outfilename;
 		$ret = system_ex($command);
 		//printLog($ret);
 	}
@@ -38,7 +38,8 @@
 	//---openpose
 	chdir(dirname(__FILE__)."/apps/openpose/bin");
 	$openpose = "OpenPoseDemo.exe";
-	$command = $openpose." --resolution 800x600 --keypoint_scale 3 --write_keypoint_json ".$jsondir."original/ --video ".$outfilename;
+    $openposeOpt = " --resolution 800x600 --keypoint_scale 3 --write_keypoint_json ".$jsondir."original/ ";
+	$command = $openpose.$openposeOpt."--video ".$outfilename;
 	$ret = system_ex($command);
 	//printLog($ret);
 

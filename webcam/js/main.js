@@ -61,13 +61,17 @@ function draw(jsonarr)
 				canvas.effect.drawBones(keypoints);
 				effect.effect.drawBones(keypoints);
 
-				effect.effect.drawHead(keypoints, "./img/stamps/emojismile.png", 30, 30);
+				effect.effect.drawImageOnParts(keypoints, "HEAD", "./img/stamps/emojismile.png", 30, 30);
+				effect.effect.drawImageOnParts(keypoints, "LEFT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
+				effect.effect.drawImageOnParts(keypoints, "RIGHT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
 
-				effect.effect.drawTraceLine(keypoints, 4, {
+
+				let option = {
 					color:"rgba(255,0,180, 0.8)", 
 					lineWidth:1, 
 					length:50
-				});
+				};
+				effect.effect.drawTraceLine(keypoints, 4, option);
 
 				// effect.effect.traceNeighborLine(keypoints, 4, {
 				// 	color:"rgba(255,0,180, 0.8)", 
@@ -75,12 +79,12 @@ function draw(jsonarr)
 				// 	length:50
 				// });
 
-				effect.effect.drawTraceCircle(keypoints, 7, {
+				option = {
 					color:"rgba(255,255,230, 0.5)", 
 					radius:10, 
 					length:20
-				});
-
+				}
+				effect.effect.drawTraceCircle(keypoints, 7, option);
 			}
 		}
 		globalFrameCount++;
