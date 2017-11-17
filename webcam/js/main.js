@@ -2,11 +2,14 @@ let cam;
 let canvas;
 let effect;
 const quickTest = true;
+
 const isPostToServer = false;
-const isAngleJson = true;
+const isAngleJson = false;
+
 const useTestFilename = true;
-const testFilename = "test1";
-const testFileLength = 120;
+const testFilename = "test";
+const testFileLength = 3412;
+
 let globalFrameCount = 0;
 
 //---サーバーでの処理が終わるとこれが呼ばれる
@@ -26,7 +29,7 @@ function onAnalyzeEnd(res)
 		var get = function(i){
 			const url = "./json/"+name+"/original/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
 			$.getJSON(url, function(res){
-				if(res && res.people && res.people[0]) console.log(res.people[0]);
+				//if(res && res.people && res.people[0]) console.log(res.people[0]);
 				res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
 				jsonarr.push(res);
 				countfile++;
@@ -58,8 +61,11 @@ function draw(jsonarr)
 			effect.setPeople(people);
 			for (let i=0; i<canvas.people.length; i++){
 	    		const keypoints = canvas.people[i].pose_keypoints;
+	    		const confidence = canvas.effect.getAverageValues(keypoints).averageConfidence;
+	    		if(confidence < 0.5) return
+
 				canvas.effect.drawBones(keypoints);
-				effect.effect.drawBones(keypoints);
+				//effect.effect.drawBones(keypoints);
 
 				effect.effect.drawImageOnParts(keypoints, "HEAD", "./img/stamps/emojismile.png", 30, 30);
 				effect.effect.drawImageOnParts(keypoints, "LEFT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
@@ -81,8 +87,9 @@ function draw(jsonarr)
 
 				option = {
 					color:"rgba(255,255,230, 0.5)", 
-					radius:10, 
-					length:20
+					radius: 10, 
+					length: 20,
+					imgMode: "BOTTOM"
 				}
 				effect.effect.drawTraceCircle(keypoints, 7, option);
 			}

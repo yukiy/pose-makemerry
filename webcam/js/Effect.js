@@ -114,21 +114,7 @@ Effect.prototype.drawImage = function(keypoints, partsId, imgsrc, width, height,
 		const p = partsId*3;
 		const x = keypoints[p];
 		const y = keypoints[p+1];
-		let offsetX;
-		let offsetY;
-		if(imgMode == "CENTER"){
-				offsetX = width/2;
-				offsetY = height/2;
-			}
-			if(imgMode == "BOTTOM"){
-				offsetX = width/2;
-				offsetY = height;
-			}
-			if(imgMode == "TOP"){
-				offsetX = width/2;
-				offsetY = 0;
-			}
-	
+		let offset = this.getOffset(imgMode, width, height);
 		if (x>0 && y>0 && x>0 && y>0) {
 			const img = new Image();
 			img.src = imgsrc;
@@ -138,7 +124,7 @@ Effect.prototype.drawImage = function(keypoints, partsId, imgsrc, width, height,
 			this.ctx.save();
 			this.ctx.translate(x*this.width, y*this.height);
 			this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180));
-			this.ctx.drawImage(img, 0-offsetX, 0-offsetY, width, height);
+			this.ctx.drawImage(img, 0-offset.x, 0-offset.y, width, height);
 			this.ctx.restore();
 		}
 	}
@@ -213,7 +199,12 @@ Effect.prototype.drawTraceCircle = function(keypoints, partsId, options)
 					//radius *= radiusDec;
 					radius =options.radius;
 					radius *= Math.pow(radiusDec, (this.traceCirclePoints.length-1-i));
-					this.drawCircle(p.x*this.width,p.y*this.height, radius, options)
+					const offset = this.getOffset(options.imgMode, radius, radius);
+					this.ctx.save();
+					this.ctx.translate(p.x*this.width, p.y*this.height);
+					this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId));
+					this.drawCircle(0-offset.x, 0-offset.y, radius, options);
+					this.ctx.restore();
 
 					//---random circles
 					const parlin = noise.simplex2(globalFrameCount%50, globalFrameCount%50)*0.0;
@@ -223,7 +214,11 @@ Effect.prototype.drawTraceCircle = function(keypoints, partsId, options)
 					const options2 = {
 					//	color : "rgba("+Math.floor(parlin*255)+","+Math.floor(parlin*255)+","+Math.floor(parlin*255)+","+Math.random()+")"
 					}
-					this.drawCircle(rX, rY, radius, options);
+					this.ctx.save();
+					this.ctx.translate(rX, rY);
+					this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId));
+					this.drawCircle(0-offset.x, 0-offset.y, radius, options);
+					this.ctx.restore();
 				}
 				
 				if(this.traceCirclePoints.length > options.length){
@@ -350,3 +345,42 @@ Effect.prototype.getAngle = function(p1, p2, mode="RADIANS")
 	}
 	return;
 }
+
+Effect.prototype.getOffset = function(imgMode, width, height)
+{
+	let offset = {x:0, y:0};
+	if(imgMode == "CENTER"){
+		offset.x = width/2;
+		offset.y = height/2;
+	}
+	if(imgMode == "BOTTOM"){
+		offset.x = width/2;
+		offset.y = height;
+	}
+	if(imgMode == "TOP"){
+		offset.x = width/2;
+		offset.y = 0;
+	}
+	return offset;
+}
+
+Effect.prototype.getAverageValues = function(keypoints)
+{
+	let sumX = 0;
+	let sumY = 0;
+	let sumC = 0;
+	for (let i=0; i<18; i++) {
+		const x = keypoints[i*3];
+		const y = keypoints[i*3+1];
+		const c = keypoints[i*3+2];
+		sumX += x;
+		sumY += y;
+		sumC += c;
+	}
+	const aveX = sumX / 18;
+	const aveY = sumY / 18;
+	const aveC = sumC / 18;
+	const ave = { averageConfidence : aveC, averageX : aveX, averageY : aveY };
+	return ave;
+}
+
