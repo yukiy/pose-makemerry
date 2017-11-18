@@ -12,43 +12,43 @@ var Effect = function(d)
 	noise.seed(Math.random());
 }
 
-Effect.prototype.drawBones = function(keypoints)
+Effect.prototype.drawBones = function(keypoints, lineWidth)
 {
 	let col = "rgb(0,0,0)";
 
 	//head
-	this.drawLine(keypoints, 0, 14, col);
-	this.drawLine(keypoints, 14, 16, col);
-	this.drawLine(keypoints, 0, 15, col);
-	this.drawLine(keypoints, 15, 17, col);
-	this.drawLine(keypoints, 0, 1, col);
+	this.drawLine(keypoints, 0, 14, col, lineWidth);
+	this.drawLine(keypoints, 14, 16, col, lineWidth);
+	this.drawLine(keypoints, 0, 15, col, lineWidth);
+	this.drawLine(keypoints, 15, 17, col, lineWidth);
+	this.drawLine(keypoints, 0, 1, col, lineWidth);
 
 	col = "rgb(255,0,0)"
 	//right arm
-	this.drawLine(keypoints, 1, 2, col);
-	this.drawLine(keypoints, 2, 3, col);
-	this.drawLine(keypoints, 3, 4, col);
+	this.drawLine(keypoints, 1, 2, col, lineWidth);
+	this.drawLine(keypoints, 2, 3, col, lineWidth);
+	this.drawLine(keypoints, 3, 4, col, lineWidth);
 	//left arm
-	this.drawLine(keypoints, 1, 5, col);
-	this.drawLine(keypoints, 5, 6, col);
-	this.drawLine(keypoints, 6, 7, col);
+	this.drawLine(keypoints, 1, 5, col, lineWidth);
+	this.drawLine(keypoints, 5, 6, col, lineWidth);
+	this.drawLine(keypoints, 6, 7, col, lineWidth);
 
 	col = "rgb(0,255,0)"
 	//body
-	this.drawLine(keypoints, 1, 8, col);
-	this.drawLine(keypoints, 1, 11, col);
+	this.drawLine(keypoints, 1, 8, col, lineWidth);
+	this.drawLine(keypoints, 1, 11, col, lineWidth);
 
 	col = "rgb(0,0,255)"
 	//right leg
-	this.drawLine(keypoints, 8, 9, col);
-	this.drawLine(keypoints, 9, 10, col);
+	this.drawLine(keypoints, 8, 9, col, lineWidth);
+	this.drawLine(keypoints, 9, 10, col, lineWidth);
 	//left leg
-	this.drawLine(keypoints, 11, 12, col);
-	this.drawLine(keypoints, 12, 13, col);
+	this.drawLine(keypoints, 11, 12, col, lineWidth);
+	this.drawLine(keypoints, 12, 13, col, lineWidth);
 }
 
 
-Effect.prototype.drawLine = function(keypoints, partsId1, partsId2, col)
+Effect.prototype.drawLine = function(keypoints, partsId1, partsId2, col, lineWidth)
 {
 	if (keypoints.length > 0)
 	{
@@ -62,7 +62,7 @@ Effect.prototype.drawLine = function(keypoints, partsId1, partsId2, col)
 		const c2 = keypoints[p2+2];
 	
 		this.ctx.strokeStyle = col;
-		this.ctx.lineWidth = 5;
+		this.ctx.lineWidth = lineWidth;
 
 		if (x1>0 && y1>0 && x2>0 && y2>0) {
 			this.ctx.beginPath();
@@ -95,8 +95,8 @@ Effect.prototype.drawImage = function(keypoints, partsId, imgsrc, width, height)
 		if (x>0 && y>0 && x>0 && y>0) {
 			const img = new Image();
 			img.src = imgsrc;
-			img.width = 30;
-			img.height = 30;
+			img.width = width;
+			img.height = height;
 
 //			this.ctx.translate(x*this.width-img.width/2, y*this.height-img.height/2);
 //			this.ctx.rotate(angleInRadians);

@@ -59,14 +59,14 @@ function draw(jsonarr)
 			for (let i=0; i<canvas.people.length; i++){
 	    		const keypoints = canvas.people[i].pose_keypoints;
 				canvas.effect.drawBones(keypoints);
-				effect.effect.drawBones(keypoints);
+				effect.effect.drawBones(keypoints, 10);
 
-				effect.effect.drawHead(keypoints, "./img/stamps/emojismile.png", 30, 30);
+				effect.effect.drawHead(keypoints, "./img/stamps/emojismile.png", 80, 80);
 
 				effect.effect.drawTraceLine(keypoints, 4, {
-					color:"rgba(255,0,180, 0.8)", 
-					lineWidth:1, 
-					length:50
+					color:"rgba(255,0,180, 0.4)", 
+					lineWidth:10, 
+					length:30
 				});
 
 				// effect.effect.traceNeighborLine(keypoints, 4, {
@@ -77,7 +77,7 @@ function draw(jsonarr)
 
 				effect.effect.drawTraceCircle(keypoints, 7, {
 					color:"rgba(255,255,230, 0.5)", 
-					radius:10, 
+					radius:40, 
 					length:20
 				});
 
@@ -229,7 +229,7 @@ $(function()
 	createCanvas("canvas", 320, 240, "resultViewTd");
 	canvas = new Draw("canvas");
 
-	createCanvas("effect", 320, 240, "effectViewTd");
+	createCanvas("effect", 320*3, 240*3, "effectViewTd");
 	effect = new Draw("effect");
 
 	setEvent();
