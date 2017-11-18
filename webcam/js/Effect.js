@@ -12,6 +12,8 @@ var Effect = function(d)
 	noise.seed(Math.random());
 }
 
+
+
 Effect.prototype.drawBones = function(keypoints)
 {
 	let col = "rgb(0,0,0)";

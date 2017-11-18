@@ -8,7 +8,7 @@ const isAngleJson = false;
 
 const useTestFilename = true;
 const testFilename = "test";
-const testFileLength = 3412;
+const testFileLength = 119;
 
 let globalFrameCount = 0;
 
@@ -55,8 +55,8 @@ function draw(jsonarr)
 		canvas.drawBackground("rgb(100,100,100)");
 		effect.drawVideo(video);
 
-		const people = json.people;
-		if(people.length > 0){
+		if(json && json.people && json.people.length > 0){
+			const people = json.people;
 			canvas.setPeople(people);
 			effect.setPeople(people);
 			for (let i=0; i<canvas.people.length; i++){
@@ -274,10 +274,72 @@ $(function()
 
 	}
 
-	//test();
+	pixitest();
 
 })
 
+function pixitest(){
+	let stage;
+	let rendere;
+
+	const filenameArr = [
+		"img/stamps/poop_Emoji.png",
+		"img/stamps/Dog_Emoji.png",
+		"img/stamps/Cat_Emoji.png"
+	]
+	
+	function setup(){
+		stage = new PIXI.Container();
+		renderer = PIXI.autoDetectRenderer(
+			256, 256,
+			{antialias: false, transparent: false, resolution: 1, preserveDrawingBuffer: false}
+		);
+		document.body.appendChild(renderer.view);
+		renderer.autoResize = true;
+		renderer.resize(128, 128);
+	}
+
+	function imageLoad(filenameArr){
+		PIXI.loader
+			.add()
+			.load(function(){
+				draw();
+			});
+	}
+
+	function createSprite(imgsrc, width, height){
+		var sprite = new PIXI.Sprite(
+			PIXI.loader.resources[imgsrc].texture
+		);
+		sprite.position.set((0, 0));
+		sprite.width = width;
+		sprite.height = height;
+		sprite.anchor.x = 0.5;
+		sprite.anchor.y = 0.5;
+		sprite.rotation = 0;
+		stage.addChild(sprite);
+		return sprite;
+	}
+
+	function updateSprite(keypoints, partsId, sprite, plusAngle=0)
+	{
+		if (keypoints.length > 0)
+		{
+			const p = partsId*3;
+			const x = keypoints[p];
+			const y = keypoints[p+1];
+			sprite.position.set((x*this.width, y*this.height));
+			sprite.rotation = this.getAnngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180));
+		}
+	}
+
+
+	setup();
+	imageLoad(filenameArr);
+	let sprite = createSprite("img/stamps/poop_Emoji.png", 30, 30);
+	updateSprite(keypoints, partsId, sprite);
+	renderer.render(stage);
+}
 
 let merrymen = [];
 function test ()
