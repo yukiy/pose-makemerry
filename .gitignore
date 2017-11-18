@@ -1,6 +1,7 @@
 .DS_Store
 .git
 _ignore/
+**/_ignore/
 json/*/*.json
 !json/test/
 openpose/
