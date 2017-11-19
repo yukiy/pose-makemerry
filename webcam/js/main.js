@@ -59,7 +59,7 @@ function draw(jsonarr)
 		effect.drawVideo(video);
 
 		//---copy video on another canvas as a texture
-		//px.copyCanvasAsBackground(effect.cvs);
+		px.copyCanvasAsBackground(effect.cvs);
 
 		if(json && json.people && json.people.length > 0){
 			const people = json.people;
@@ -110,15 +110,16 @@ function draw(jsonarr)
 				effect.effect.drawTraceCircle(keypoints, 7, option);
 
 				if(Object.keys(px.sprites).length > 0){
-					px.drawSpriteOnParts(keypoints, "HEAD", 		 px.sprites["smile_head"], 30, 30);
+					px.drawSpriteOnParts(keypoints, "HEAD", 	  px.sprites["smile_head"], 30, 30);
 					px.drawSpriteOnParts(keypoints, "LEFT_HAND",  px.sprites["mickeyhand_left"], 30, 30);
 					px.drawSpriteOnParts(keypoints, "RIGHT_HAND", px.sprites["mickeyhand_right"], 30, 30);
+					px.addFilter(px.sprites["smile_head"], {filter:"BlurFilter", blur:0.3, quality:4});
 				}
 
 				option = {
 					color: 0xff0099,
 					alpha: 0.8,
-					lineWidth:1, 
+					lineWidth:3, 
 					length:50
 				};
 				px.drawTraceLine(keypoints, 4, option);
@@ -131,6 +132,10 @@ function draw(jsonarr)
 					imgMode: "BOTTOM"
 				}
 				px.drawTraceCircle(keypoints, 7, option);
+
+				//wip to try extra-filter
+				//px.addFilter(px.graphics, {filter:"GlowFilter", blur:3, quality:4});
+
 
 			}
 		}
