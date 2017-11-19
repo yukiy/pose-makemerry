@@ -123,7 +123,7 @@ Effect.prototype.drawImage = function(keypoints, partsId, imgsrc, width, height,
 
 			this.ctx.save();
 			this.ctx.translate(x*this.width, y*this.height);
-			this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180));
+			this.ctx.rotate(this.getAngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180));
 			this.ctx.drawImage(img, 0-offset.x, 0-offset.y, width, height);
 			this.ctx.restore();
 		}
@@ -202,7 +202,7 @@ Effect.prototype.drawTraceCircle = function(keypoints, partsId, options)
 					const offset = this.getOffset(options.imgMode, radius, radius);
 					this.ctx.save();
 					this.ctx.translate(p.x*this.width, p.y*this.height);
-					this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId));
+					this.ctx.rotate(this.getAngleFromKeypoints(keypoints, partsId));
 					this.drawCircle(0-offset.x, 0-offset.y, radius, options);
 					this.ctx.restore();
 
@@ -216,7 +216,7 @@ Effect.prototype.drawTraceCircle = function(keypoints, partsId, options)
 					}
 					this.ctx.save();
 					this.ctx.translate(rX, rY);
-					this.ctx.rotate(this.getAnngleFromKeypoints(keypoints, partsId));
+					this.ctx.rotate(this.getAngleFromKeypoints(keypoints, partsId));
 					this.drawCircle(0-offset.x, 0-offset.y, radius, options);
 					this.ctx.restore();
 				}
@@ -300,7 +300,7 @@ Effect.prototype.traceNeighborLine = function(keypoints, partsId, options)
 
 
 
-Effect.prototype.getAnngleFromKeypoints = function(keypoints, partsId1, mode)
+Effect.prototype.getAngleFromKeypoints = function(keypoints, partsId1, mode)
 {
 	let partsId2;
 	if(partsId1 == 0) partsId2 = 1;

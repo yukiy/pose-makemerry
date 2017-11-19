@@ -42,3 +42,4 @@ Draw.prototype.setPeople = function(people){
 }
 
 
+

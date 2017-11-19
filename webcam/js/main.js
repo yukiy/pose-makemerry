@@ -1,6 +1,8 @@
 let cam;
 let canvas;
 let effect;
+let px;
+
 const quickTest = true;
 
 const isPostToServer = false;
@@ -46,19 +48,24 @@ function onAnalyzeEnd(res)
 
 function draw(jsonarr)
 {
+	const video = cam.playbackVideo;
+
 	setInterval(function()
 	{
-		const video = cam.playbackVideo;
 		const frameNum = cam.getCurrentFrame(video);
 		const json = jsonarr[frameNum];
 		//canvas.drawVideo(video);
 		canvas.drawBackground("rgb(100,100,100)");
 		effect.drawVideo(video);
 
+		//---copy video on another canvas as a texture
+		//px.copyCanvasAsBackground(effect.cvs);
+
 		if(json && json.people && json.people.length > 0){
 			const people = json.people;
 			canvas.setPeople(people);
 			effect.setPeople(people);
+
 			for (let i=0; i<canvas.people.length; i++){
 	    		const keypoints = canvas.people[i].pose_keypoints;
 	    		const confidence = canvas.effect.getAverageValues(keypoints).averageConfidence;
@@ -66,6 +73,8 @@ function draw(jsonarr)
 
 				canvas.effect.drawBones(keypoints, 5);
 				//effect.effect.drawBones(keypoints, 5);
+				px.drawBones(keypoints, 5);
+
 
 				effect.effect.drawTraceLine(keypoints, 4, {
 					color:"rgba(255,0,180, 0.4)", 
@@ -74,10 +83,9 @@ function draw(jsonarr)
 				});
 				//effect.effect.drawBones(keypoints);
 
-				effect.effect.drawImageOnParts(keypoints, "HEAD", "./img/stamps/emojismile.png", 30, 30);
-				effect.effect.drawImageOnParts(keypoints, "LEFT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
+				effect.effect.drawImageOnParts(keypoints, "HEAD", 		"./img/stamps/emojismile.png", 30, 30);
+				effect.effect.drawImageOnParts(keypoints, "LEFT_HAND",  "./img/stamps/mickeyglobe_rotate.png", 30, 30);
 				effect.effect.drawImageOnParts(keypoints, "RIGHT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
-
 
 				let option = {
 					color:"rgba(255,0,180, 0.8)", 
@@ -100,9 +108,35 @@ function draw(jsonarr)
 					imgMode: "BOTTOM"
 				}
 				effect.effect.drawTraceCircle(keypoints, 7, option);
+
+				if(Object.keys(px.sprites).length > 0){
+					px.drawSpriteOnParts(keypoints, "HEAD", 		 px.sprites["smile_head"], 30, 30);
+					px.drawSpriteOnParts(keypoints, "LEFT_HAND",  px.sprites["mickeyhand_left"], 30, 30);
+					px.drawSpriteOnParts(keypoints, "RIGHT_HAND", px.sprites["mickeyhand_right"], 30, 30);
+				}
+
+				option = {
+					color: 0xff0099,
+					alpha: 0.8,
+					lineWidth:1, 
+					length:50
+				};
+				px.drawTraceLine(keypoints, 4, option);
+
+				option = {
+					color: 0xffffaa,
+					alpha: 0.5, 
+					radius: 10, 
+					length: 20,
+					imgMode: "BOTTOM"
+				}
+				px.drawTraceCircle(keypoints, 7, option);
+
 			}
 		}
 
+		px.renderer.render(px.stage);
+		px.graphics.clear();
 		globalFrameCount++;
 
 	},1000/30);
@@ -242,8 +276,21 @@ function createCanvas(id, w, h, targetId)
 }
 
 
+function createSprites(){
+
+	const list = {
+		"mickeyhand_left" 	: "img/stamps/mickeyglobe_rotate.png",
+		"mickeyhand_right" 	: "img/stamps/mickeyglobe_rotate.png",
+		"smile_head" 		: "img/stamps/emojismile.png"
+	};
+
+	px.createSprites(list);
+}
+
+
 $(function()
 {
+
 	$(".recs").hide();
 	cam = new Camera();
 
@@ -252,6 +299,10 @@ $(function()
 
 	createCanvas("effect", 320, 240, "effectViewTd");
 	effect = new Draw("effect");
+
+
+	px = new PixiControl(320, 240, "effectViewTd2");
+	createSprites();
 
 	setEvent();
 
@@ -287,74 +338,7 @@ $(function()
 
 })
 
-function pixitest(){
-	let stage;
-	let rendere;
 
-	const filenameArr = [
-		"img/stamps/poop_Emoji.png",
-		"img/stamps/Dog_Emoji.png",
-		"img/stamps/Cat_Emoji.png"
-	]
-	
-	function imageLoad(filenameArr){
-		PIXI.loader
-			.add(filenameArr)
-			.load(function(){
-				drawPixi();
-			});
-	}
-
-	function createSprite(imgsrc, width, height){
-		var sprite = new PIXI.Sprite(
-			PIXI.loader.resources[imgsrc].texture
-		);
-		sprite.position.set((0, 0));
-		sprite.width = width;
-		sprite.height = height;
-		sprite.anchor.x = 0.5;
-		sprite.anchor.y = 0.5;
-		sprite.rotation = 0;
-		return sprite;
-	}
-
-	function setupPixi(){
-		stage = new PIXI.Container();
-		renderer = PIXI.autoDetectRenderer(
-			256, 256,
-			{antialias: false, transparent: false, resolution: 1, preserveDrawingBuffer: false}
-		);
-		document.body.appendChild(renderer.view);
-		renderer.autoResize = true;
-		renderer.resize(128, 128);
-
-		imageLoad(filenameArr);
-		let sprite = createSprite("img/stamps/poop_Emoji.png", 30, 30);
-		stage.addChild(sprite);
-	}
-
-	function updateSprite(keypoints, partsId, sprite, plusAngle=0)
-	{
-		if (keypoints.length > 0)
-		{
-			const p = partsId*3;
-			const x = keypoints[p];
-			const y = keypoints[p+1];
-			sprite.position.set((x*this.width, y*this.height));
-			sprite.rotation = this.getAnngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180);
-		}
-	}
-
-	function drawPixi(keypoints, partsId, sprite)
-	{
-		updateSprite(keypoints, partsId, sprite);
-		renderer.render(stage);		
-	}
-
-	setupPixi();
-	drawPixi(keypoints, partsId, sprite);
-	
-}
 
 let merrymen = [];
 function test ()
