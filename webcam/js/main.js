@@ -28,7 +28,7 @@ function onAnalyzeEnd(res)
 
 		//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
 		let countfile = 0;
-		var get = function(i){
+		var get = function(i, callback){
 			const url = "./json/"+name+"/original/"+name+"_"+zeroPadding(i,12)+"_keypoints.json";
 			$.getJSON(url, function(res){
 				//if(res && res.people && res.people[0]) console.log(res.people[0]);
@@ -36,116 +36,167 @@ function onAnalyzeEnd(res)
 				jsonarr.push(res);
 				countfile++;
 				if(countfile < length){
-					get(countfile);
+					get(countfile, callback);
+				}else{
+					callback();
 				}
 			})		
 		}
-		get(countfile);
-		draw(jsonarr);
+
+		get(countfile, function()
+		{
+			setup();
+			setInterval(function(){
+				const frameNum = cam.getCurrentFrame(video);
+				if(frameNum == 0){
+					boneGraphics.init();
+					leftHandGraphics.init();
+					rightHandGraphics.init();					
+				}
+				const json = jsonarr[frameNum];
+				if(json && json.people && json.people.length > 0){
+					draw(json);
+					px.renderer.render(px.stage);
+					boneGraphics.clear();
+					leftHandGraphics.clear();
+					rightHandGraphics.clear();
+				}
+
+				globalFrameCount++;
+			}, 1000/30)			
+		});
+	}
+}
+
+/*****************************************************************************************************************/
+let video;
+let bone;
+let leftHandGraphics;
+let rightHandGraphics;
+
+function setup()
+{
+	px = new PixiControl();
+	px.setupStage(320, 240, "effectViewTd2");
+
+	video = cam.playbackVideo;
+
+	boneGraphics 		= new GraphicEffects(px);
+	leftHandGraphics 	= new GraphicEffects(px);
+	rightHandGraphics	= new GraphicEffects(px);
+
+	sprites = new SpriteEffects(px);
+	const list = {
+		"mickeyhand_left" 	: "img/stamps/mickeyglobe_rotate.png",
+		"mickeyhand_right" 	: "img/stamps/mickeyglobe_rotate.png",
+		"smile_head" 		: "img/stamps/emojismile.png"
+	};
+	sprites.createSprites(list);
+}
+
+
+function draw(json)
+{
+	//canvas.drawVideo(video);
+	canvas.drawBackground("rgb(100,100,100)");
+	effect.drawVideo(video);
+
+	//---copy video on another canvas as a texture
+	//px.copyCanvasAsBackground(effect.cvs);
+
+	const people = json.people;
+	canvas.setPeople(people);
+	effect.setPeople(people);
+
+	for (let i=0; i<canvas.people.length; i++){
+		const keypoints = canvas.people[i].pose_keypoints;
+		const confidence = canvas.effect.getAverageValues(keypoints).averageConfidence;
+		if(confidence < 0.5) return
+
+		canvas.effect.drawBones(keypoints, 5);
+		//effect.effect.drawBones(keypoints, 5);
+		boneGraphics.drawBones(keypoints, 5);
+
+
+		effect.effect.drawTraceLine(keypoints, 4, {
+			color:"rgba(255,0,180, 0.4)", 
+			lineWidth:10, 
+			length:30
+		});
+		//effect.effect.drawBones(keypoints);
+
+		effect.effect.drawImageOnParts(keypoints, "HEAD", 		"./img/stamps/emojismile.png", 30, 30);
+		effect.effect.drawImageOnParts(keypoints, "LEFT_HAND",  "./img/stamps/mickeyglobe_rotate.png", 30, 30);
+		effect.effect.drawImageOnParts(keypoints, "RIGHT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
+
+		let option = {
+			color:"rgba(255,0,180, 0.8)", 
+			lineWidth:1, 
+			length:50
+		};
+		effect.effect.drawTraceLine(keypoints, 4, option);
+
+
+		// effect.effect.traceNeighborLine(keypoints, 4, {
+		// 	color:"rgba(255,0,180, 0.8)", 
+		// 	lineWidth:1, 
+		// 	length:50
+		// });
+
+		option = {
+			color:"rgba(255,255,230, 0.5)", 
+			radius: 10, 
+			length: 20,
+			imgMode: "BOTTOM"
+		}
+		effect.effect.drawTraceCircle(keypoints, 7, option);
+
+
+		if(Object.keys(sprites.sprites).length > 0)
+		{
+			sprites.drawSpriteOnParts(keypoints, "HEAD", 	  sprites.sprites["smile_head"], 30, 30);
+			sprites.drawSpriteOnParts(keypoints, "LEFT_HAND",  sprites.sprites["mickeyhand_left"], 30, 30);
+			sprites.drawSpriteOnParts(keypoints, "RIGHT_HAND", sprites.sprites["mickeyhand_right"], 30, 30);
+			px.addFilter(sprites.sprites["smile_head"], {filter:"BlurFilter", blur:0.3, quality:4});
+
+			/*TODO:
+				smileHead = new SpriteEffects();
+				smileHead.load("img/stamps/emojismile.png");
+				smileHead.drawSpriteOnParts(keypoints, "HEAD", 30, 30);
+			*/
+		}
+
+
+		option = {
+			color: 0xff0099,
+			alpha: 0.8,
+			lineWidth: 3, 
+			length: 50
+		};
+
+		rightHandGraphics.drawTraceLine(keypoints, 4, option);
+
+
+		option = {
+			color: 0xffffaa,
+			alpha: 0.5, 
+			radius: 10, 
+			length: 20,
+			imgMode: "BOTTOM"
+		}
+
+		leftHandGraphics.drawTraceCircle(keypoints, 7, option);
+
+		//wip to try extra-filter
+		//px.addFilter(px.graphics, {filter:"GlowFilter", blur:3, quality:4});
 	}
 }
 
 
-function draw(jsonarr)
-{
-	const video = cam.playbackVideo;
-
-	setInterval(function()
-	{
-		const frameNum = cam.getCurrentFrame(video);
-		const json = jsonarr[frameNum];
-		//canvas.drawVideo(video);
-		canvas.drawBackground("rgb(100,100,100)");
-		effect.drawVideo(video);
-
-		//---copy video on another canvas as a texture
-		px.copyCanvasAsBackground(effect.cvs);
-
-		if(json && json.people && json.people.length > 0){
-			const people = json.people;
-			canvas.setPeople(people);
-			effect.setPeople(people);
-
-			for (let i=0; i<canvas.people.length; i++){
-	    		const keypoints = canvas.people[i].pose_keypoints;
-	    		const confidence = canvas.effect.getAverageValues(keypoints).averageConfidence;
-	    		if(confidence < 0.5) return
-
-				canvas.effect.drawBones(keypoints, 5);
-				//effect.effect.drawBones(keypoints, 5);
-				px.drawBones(keypoints, 5);
+/*****************************************************************************************************************/
 
 
-				effect.effect.drawTraceLine(keypoints, 4, {
-					color:"rgba(255,0,180, 0.4)", 
-					lineWidth:10, 
-					length:30
-				});
-				//effect.effect.drawBones(keypoints);
 
-				effect.effect.drawImageOnParts(keypoints, "HEAD", 		"./img/stamps/emojismile.png", 30, 30);
-				effect.effect.drawImageOnParts(keypoints, "LEFT_HAND",  "./img/stamps/mickeyglobe_rotate.png", 30, 30);
-				effect.effect.drawImageOnParts(keypoints, "RIGHT_HAND", "./img/stamps/mickeyglobe_rotate.png", 30, 30);
-
-				let option = {
-					color:"rgba(255,0,180, 0.8)", 
-					lineWidth:1, 
-					length:50
-				};
-				effect.effect.drawTraceLine(keypoints, 4, option);
-
-
-				// effect.effect.traceNeighborLine(keypoints, 4, {
-				// 	color:"rgba(255,0,180, 0.8)", 
-				// 	lineWidth:1, 
-				// 	length:50
-				// });
-
-				option = {
-					color:"rgba(255,255,230, 0.5)", 
-					radius: 10, 
-					length: 20,
-					imgMode: "BOTTOM"
-				}
-				effect.effect.drawTraceCircle(keypoints, 7, option);
-
-				if(Object.keys(px.sprites).length > 0){
-					px.drawSpriteOnParts(keypoints, "HEAD", 	  px.sprites["smile_head"], 30, 30);
-					px.drawSpriteOnParts(keypoints, "LEFT_HAND",  px.sprites["mickeyhand_left"], 30, 30);
-					px.drawSpriteOnParts(keypoints, "RIGHT_HAND", px.sprites["mickeyhand_right"], 30, 30);
-					px.addFilter(px.sprites["smile_head"], {filter:"BlurFilter", blur:0.3, quality:4});
-				}
-
-				option = {
-					color: 0xff0099,
-					alpha: 0.8,
-					lineWidth:3, 
-					length:50
-				};
-				px.drawTraceLine(keypoints, 4, option);
-
-				option = {
-					color: 0xffffaa,
-					alpha: 0.5, 
-					radius: 10, 
-					length: 20,
-					imgMode: "BOTTOM"
-				}
-				px.drawTraceCircle(keypoints, 7, option);
-
-				//wip to try extra-filter
-				//px.addFilter(px.graphics, {filter:"GlowFilter", blur:3, quality:4});
-
-
-			}
-		}
-
-		px.renderer.render(px.stage);
-		px.graphics.clear();
-		globalFrameCount++;
-
-	},1000/30);
-}
 
 //---0001234みたいに0で桁を合わせる用関数
 function zeroPadding(num, digit)
@@ -281,16 +332,7 @@ function createCanvas(id, w, h, targetId)
 }
 
 
-function createSprites(){
 
-	const list = {
-		"mickeyhand_left" 	: "img/stamps/mickeyglobe_rotate.png",
-		"mickeyhand_right" 	: "img/stamps/mickeyglobe_rotate.png",
-		"smile_head" 		: "img/stamps/emojismile.png"
-	};
-
-	px.createSprites(list);
-}
 
 
 $(function()
@@ -304,10 +346,6 @@ $(function()
 
 	createCanvas("effect", 320, 240, "effectViewTd");
 	effect = new Draw("effect");
-
-
-	px = new PixiControl(320, 240, "effectViewTd2");
-	createSprites();
 
 	setEvent();
 

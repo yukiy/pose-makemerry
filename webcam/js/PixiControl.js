@@ -1,27 +1,21 @@
 
-var PixiControl = function(width, height, elId)
+var PixiControl = function()
 {
 	this.renderer;
 	this.stage;
-	this.width = width;
-	this.height = height;
+	this.width;
+	this.height;
 
 	this.ctx;
-
-	this.sprites = [];
-
-	this.isImagesLoaded = true;
-
-	this.sprites = {};
 
 	this.bgVideoTexture;
 	this.bgVideoSource;
 
-	this.setupStage(width, height, elId);
-	this.background = this.createBackground();
+	//this.setupStage(width, height, elId);
+	//this.background = this.createBackground();
 
 	//this.graphicsList = [];
-	this.graphics = this.createGraphics();
+	//this.graphics = this.createGraphics();
 
 	this.traceCirclePoints = [];
 	this.traceLinePoints = [];
@@ -31,6 +25,8 @@ var PixiControl = function(width, height, elId)
 
 PixiControl.prototype.setupStage = function(width, height, elId)
 {
+	this.width = width;
+	this.height = height;
 	this.stage = new PIXI.Container();
 	this.renderer = PIXI.autoDetectRenderer(
 		width, height,
@@ -39,9 +35,8 @@ PixiControl.prototype.setupStage = function(width, height, elId)
 	document.getElementById(elId).appendChild(this.renderer.view);
 	this.renderer.autoResize = true;
 	this.renderer.resize(width, height);
-
+	this.background = this.createBackground();
 }
-
 
 // PixiControl.prototype.drawdVideo = function(video, frameNum)
 // {
@@ -67,14 +62,6 @@ PixiControl.prototype.createBackground = function()
 }
 
 
-PixiControl.prototype.createGraphics = function()
-{
-	let graphics = new PIXI.Graphics();
-	this.stage.addChild(graphics);
-	return graphics;
-}
-
-
 PixiControl.prototype.copyCanvasAsBackground = function(canvas)
 {
 	let canvasTexture = PIXI.Texture.fromCanvas(canvas);
@@ -84,97 +71,8 @@ PixiControl.prototype.copyCanvasAsBackground = function(canvas)
 
 
 
-PixiControl.prototype.createSprites = function(list)
-{
-	const that = this;
-	let urls = [];
-	for(let name in list){
-		urls.push(list[name]);
-	}
-
-	//---remove same urls
-	urls = Array.from(new Set(urls));
-
-	//---load
-	PIXI.loader.add(urls);
-	PIXI.loader.load(function(){
-		that.isImageLoaded = true;
-		for(let name in list){
-			const sprite = that.createSprite(name, list[name]);
-			that.stage.addChild(sprite);
-		}
-		PIXI.loader.reset();
-	})
-} 
-
-PixiControl.prototype.createSprite = function(name, imgsrc, x=0, y=0, width=50, height=50, anchorX=0.5, anchorY=0.5, rotation=0)
-{
-	var sprite = new PIXI.Sprite( PIXI.loader.resources[imgsrc].texture );
-	sprite.position.set(x, y);
-	sprite.width = width;
-	sprite.height = height;
-	sprite.anchor.x = anchorX;
-	sprite.anchor.y = anchorY;
-	sprite.rotation = rotation;
-
-	//const name = imgsrc.substr(imgsrc.lastIndexOf('/')+1);
-	this.sprites[name] = sprite;	
-	return sprite;
-}
 
 
-PixiControl.prototype.drawSpriteOnParts = function(keypoints, partsName, sprite, width, height, plusAngle=0)
-{
-	if(this.isImagesLoaded == false) return;
-	let partsId;
-	let imgMode;
-
-	if(partsName.toUpperCase() == "HEAD"){
-		partsId = 0;
-		imgMode = "CENTER"
-	}
-	if(partsName.toUpperCase() == "LEFT_HAND"){
-		partsId = 7;
-		imgMode = "BOTTOM"
-	}
-	if(partsName.toUpperCase() == "RIGHT_HAND"){
-		partsId = 4;
-		imgMode = "BOTTOM"
-	}
-	if(partsName.toUpperCase() == "LEFT_FOOT"){
-		partsId = 13;
-		imgMode = "CENTER"
-	}
-	if(partsName.toUpperCase() == "RIGHT_FOOT"){
-		partsId = 10;
-		imgMode = "CENTER"
-	}
-
-	this.updateSprite(keypoints, partsId, sprite, width, height, imgMode, plusAngle);
-	this.renderer.render(this.stage);	
-}
-
-
-PixiControl.prototype.updateSprite = function(keypoints, partsId, sprite, width, height, imgMode, plusAngle=0)
-{
-	if(this.isImagesLoaded == false) return;
-
-	if (keypoints.length > 0)
-	{
-		const p = partsId*3;
-		const x = keypoints[p];
-		const y = keypoints[p+1];
-
-		if(x!=0 && y!=0){
-			this.setOffset(sprite, imgMode);
-			sprite.position.set(x*this.width, y*this.height);
-			//console.log(x);
-			sprite.width = width;
-			sprite.height = height;
-			sprite.rotation = this.getAngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180);			
-		}
-	}	
-}
 
 PixiControl.prototype.addFilter = function(target, options)
 {
@@ -197,155 +95,6 @@ PixiControl.prototype.addFilter = function(target, options)
 
 
 
-PixiControl.prototype.drawBones = function(keypoints, lineWidth)
-{
-	let col = 0x000000;
-
-	//head
-	this.drawLine(keypoints, 0, 14, col, lineWidth);
-	this.drawLine(keypoints, 14, 16, col, lineWidth);
-	this.drawLine(keypoints, 0, 15, col, lineWidth);
-	this.drawLine(keypoints, 15, 17, col, lineWidth);
-	this.drawLine(keypoints, 0, 1, col, lineWidth);
-
-	col = 0xff0000;
-	//right arm
-	this.drawLine(keypoints, 1, 2, col, lineWidth);
-	this.drawLine(keypoints, 2, 3, col, lineWidth);
-	this.drawLine(keypoints, 3, 4, col, lineWidth);
-	//left arm
-	this.drawLine(keypoints, 1, 5, col, lineWidth);
-	this.drawLine(keypoints, 5, 6, col, lineWidth);
-	this.drawLine(keypoints, 6, 7, col, lineWidth);
-
-	col = 0x00ff00;
-	//body
-	this.drawLine(keypoints, 1, 8, col, lineWidth);
-	this.drawLine(keypoints, 1, 11, col, lineWidth);
-
-	col = 0x0000ff;
-	//right leg
-	this.drawLine(keypoints, 8, 9, col, lineWidth);
-	this.drawLine(keypoints, 9, 10, col, lineWidth);
-	//left leg
-	this.drawLine(keypoints, 11, 12, col, lineWidth);
-	this.drawLine(keypoints, 12, 13, col, lineWidth);
-}
-
-
-
-PixiControl.prototype.drawTraceLine = function(keypoints, partsId, options)
-{
-	if (keypoints.length > 0)
-	{
-		const p = partsId*3;
-		const x = keypoints[p];
-		const y = keypoints[p+1];
-	
-		if (x>0 && y>0) {
-			this.graphics.lineStyle(options.lineWidth, options.color, options.alpha);
-
-			this.traceLinePoints.push({x:x, y:y});
-
-			if(this.traceLinePoints.length > 2){
-				for(let i=0; i<this.traceLinePoints.length; i++){
-					let p = this.traceLinePoints[i];
-					this.graphics.lineTo(p.x*this.width, p.y*this.height);
-				}
-				if(this.traceLinePoints.length > options.length){
-					this.traceLinePoints.shift();
-				}
-			}else{
-				let p = this.traceLinePoints[0];
-				this.graphics.moveTo(p.x*this.width, p.y*this.height);
-			}
-		}
-		else {
-		//println(count);
-		}
-	}
-}
-
-
-//PixiControl.prototype.drawLine = function(keypoints, partsId1, partsId2, col, lineWidth, graphics = this.createGraphics())
-PixiControl.prototype.drawLine = function(keypoints, partsId1, partsId2, col, lineWidth)
-{
-	if (keypoints.length > 0)
-	{
-		const p1 = partsId1*3;
-		const p2 = partsId2*3;
-		const x1 = keypoints[p1];
-		const y1 = keypoints[p1+1];
-		const x2 = keypoints[p2];
-		const y2 = keypoints[p2+1];
-	
-		this.graphics.lineStyle(lineWidth, col, 1);
-
-		if (x1>0 && y1>0 && x2>0 && y2>0) {
-			this.graphics.moveTo(x1*this.width, y1*this.height);
-			this.graphics.lineTo(x2*this.width, y2*this.height);
-		}
-	}
-}
-
-PixiControl.prototype.drawTraceCircle = function(keypoints, partsId, options)
-{
-	if (keypoints.length > 0)
-	{
-		const p = partsId*3;
-		const x = keypoints[p];
-		const y = keypoints[p+1];
-		const c = keypoints[p+2];
-	
-		if (x>0 && y>0) {
-
-			this.traceCirclePoints.push({x:x, y:y});
-
-			let radius = options.radius;
-			let radiusDec = 0.9;
-
-			if(this.traceCirclePoints.length > 2){
-				for(let i=0; i<this.traceCirclePoints.length; i++){
-					let p = this.traceCirclePoints[i];
-					//radius *= radiusDec;
-					radius =options.radius;
-					radius *= Math.pow(radiusDec, (this.traceCirclePoints.length-1-i));
-					const offset = this.getOffset(options.imgMode, radius, radius);
-					this.drawCircle(p.x*this.width-offset.x, p.y*this.height-offset.y, radius, options);
-
-					//---random circles
-					const parlin = noise.simplex2(globalFrameCount%50, globalFrameCount%50)*0.0;
-					const rRadius = Math.random()*radius/3;
-					const rX = (p.x+parlin) *this.width;
-					const rY = (p.y+parlin) *this.height;
-					const options2 = {
-					//	color : "rgba("+Math.floor(parlin*255)+","+Math.floor(parlin*255)+","+Math.floor(parlin*255)+","+Math.random()+")"
-					}
-					this.drawCircle(rX-offset.x, rY-offset.y, radius, options);
-				}
-				
-				if(this.traceCirclePoints.length > options.length){
-					this.traceCirclePoints.shift();
-				}
-			}else{
-				let p = this.traceCirclePoints[0];
-				this.drawCircle(p.x*this.width, p.y*this.height, radius,0,Math.PI*2,true);
-			}
-		}
-		else {
-		//println(count);
-		}
-	}
-}
-
-
-PixiControl.prototype.drawCircle = function(x, y, r, options)
-{
-	this.graphics.lineStyle(0);
-	this.graphics.beginFill(options.color, options.alpha);
-	this.graphics.drawCircle(x, y, r);
-	this.graphics.endFill();
-}
 
 
 PixiControl.prototype.getOffset = function(imgMode, width, height)
