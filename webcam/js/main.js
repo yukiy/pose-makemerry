@@ -85,13 +85,13 @@ function setup()
 	leftHandGraphics 	= new GraphicEffects(px);
 	rightHandGraphics	= new GraphicEffects(px);
 
-	sprites = new SpriteEffects(px);
 	const list = {
-		"mickeyhand_left" 	: "img/stamps/mickeyglobe_rotate.png",
-		"mickeyhand_right" 	: "img/stamps/mickeyglobe_rotate.png",
-		"smile_head" 		: "img/stamps/emojismile.png"
+		"mickeyHandLeft" 	: "img/stamps/mickeyglobe_rotate.png",
+		"mickeyHandRight" 	: "img/stamps/mickeyglobe_rotate.png",
+		"smileHead" 		: "img/stamps/emojismile.png"
 	};
-	sprites.createSprites(list);
+	sp = new SpriteManager(px, list);
+
 }
 
 
@@ -152,18 +152,13 @@ function draw(json)
 		effect.effect.drawTraceCircle(keypoints, 7, option);
 
 
-		if(Object.keys(sprites.sprites).length > 0)
+		if(Object.keys(sp).length > 0)
 		{
-			sprites.drawSpriteOnParts(keypoints, "HEAD", 	  sprites.sprites["smile_head"], 30, 30);
-			sprites.drawSpriteOnParts(keypoints, "LEFT_HAND",  sprites.sprites["mickeyhand_left"], 30, 30);
-			sprites.drawSpriteOnParts(keypoints, "RIGHT_HAND", sprites.sprites["mickeyhand_right"], 30, 30);
-			px.addFilter(sprites.sprites["smile_head"], {filter:"BlurFilter", blur:0.3, quality:4});
-
-			/*TODO:
-				smileHead = new SpriteEffects();
-				smileHead.load("img/stamps/emojismile.png");
-				smileHead.drawSpriteOnParts(keypoints, "HEAD", 30, 30);
-			*/
+			sp.smileHead.drawSpriteOnParts(keypoints, "HEAD", 30, 30);
+			sp.mickeyHandLeft.drawSpriteOnParts(keypoints, "LEFT_HAND",  30, 30);
+			sp.mickeyHandRight.drawSpriteOnParts(keypoints, "RIGHT_HAND", 30, 30);
+			
+			px.addFilter(sp.smileHead.sprite, {filter:"BlurFilter", blur:0.5, quality:4});
 		}
 
 

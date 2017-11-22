@@ -1,36 +1,13 @@
-//WIP個別にnewで扱えるようにする
-var SpriteEffects = function(px)
+var SpriteManager = function(px, list)
 {
 	this.px = px;
+	this.isImageLoaded = false;
 
-	this.sprites = [];
-	this.sprites = {};
-
-	this.isImagesLoaded = true;
+	this.createSprites(list);
 }
 
 
-SpriteEffects.prototype.create = function(px)
-{
-	this.graphics = new PIXI.Graphics();
-	px.stage.addChild(this.graphics);
-}
-
-
-SpriteEffects.prototype.clear = function()
-{
-	this.graphics.clear();
-}
-
-SpriteEffects.prototype.init = function()
-{
-	this.graphics.clear();
-	this.traceLinePoints = [];
-	this.traceCirclePoints = [];
-}
-
-
-SpriteEffects.prototype.createSprites = function(list)
+SpriteManager.prototype.createSprites = function(list)
 {
 	const that = this;
 	let urls = [];
@@ -49,12 +26,13 @@ SpriteEffects.prototype.createSprites = function(list)
 			const sprite = that.createSprite(name, list[name]);
 			that.px.stage.addChild(sprite);
 		}
+		console.log(that);
 		PIXI.loader.reset();
 	})
 } 
 
 
-SpriteEffects.prototype.createSprite = function(name, imgsrc, x=0, y=0, width=50, height=50, anchorX=0.5, anchorY=0.5, rotation=0)
+SpriteManager.prototype.createSprite = function(name, imgsrc, x=0, y=0, width=50, height=50, anchorX=0.5, anchorY=0.5, rotation=0)
 {
 	var sprite = new PIXI.Sprite( PIXI.loader.resources[imgsrc].texture );
 	sprite.position.set(x, y);
@@ -65,14 +43,26 @@ SpriteEffects.prototype.createSprite = function(name, imgsrc, x=0, y=0, width=50
 	sprite.rotation = rotation;
 
 	//const name = imgsrc.substr(imgsrc.lastIndexOf('/')+1);
-	this.sprites[name] = sprite;	
+	this[name] = new SpriteEffects(this.px, sprite);
 	return sprite;
 }
 
 
-SpriteEffects.prototype.drawSpriteOnParts = function(keypoints, partsName, sprite, width, height, plusAngle=0)
+
+
+/*=========================================================================================================================*/
+
+var SpriteEffects = function(px, sprite)
 {
-	if(this.isImagesLoaded == false) return;
+	this.px = px;
+	this.sprite = sprite;
+}
+
+
+//SpriteEffects.prototype.drawSpriteOnParts = function(keypoints, partsName, sprite, width, height, plusAngle=0)
+SpriteEffects.prototype.drawSpriteOnParts = function(keypoints, partsName, width, height, plusAngle=0)
+{
+	//if(this.isImagesLoaded == false) return;
 	let partsId;
 	let imgMode;
 
@@ -97,14 +87,16 @@ SpriteEffects.prototype.drawSpriteOnParts = function(keypoints, partsName, sprit
 		imgMode = "CENTER"
 	}
 
-	this.updateSprite(keypoints, partsId, sprite, width, height, imgMode, plusAngle);
+	//this.updateSprite(keypoints, partsId, sprite, width, height, imgMode, plusAngle);
+	this.updateSprite(keypoints, partsId, width, height, imgMode, plusAngle);
 	this.px.renderer.render(this.px.stage);	
 }
 
 
-SpriteEffects.prototype.updateSprite = function(keypoints, partsId, sprite, width, height, imgMode, plusAngle=0)
+//SpriteEffects.prototype.updateSprite = function(keypoints, partsId, sprite, width, height, imgMode, plusAngle=0)
+SpriteEffects.prototype.updateSprite = function(keypoints, partsId, width, height, imgMode, plusAngle=0)
 {
-	if(this.isImagesLoaded == false) return;
+	//if(this.isImagesLoaded == false) return;
 
 	if (keypoints.length > 0)
 	{
@@ -113,12 +105,12 @@ SpriteEffects.prototype.updateSprite = function(keypoints, partsId, sprite, widt
 		const y = keypoints[p+1];
 
 		if(x!=0 && y!=0){
-			this.px.setOffset(sprite, imgMode);
-			sprite.position.set(x*this.px.width, y*this.px.height);
+			this.px.setOffset(this.sprite, imgMode);
+			this.sprite.position.set(x*this.px.width, y*this.px.height);
 			//console.log(x);
-			sprite.width = width;
-			sprite.height = height;
-			sprite.rotation = this.px.getAngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180);			
+			this.sprite.width = width;
+			this.sprite.height = height;
+			this.sprite.rotation = this.px.getAngleFromKeypoints(keypoints, partsId) + (plusAngle*Math.PI/180);			
 		}
 	}	
 }
