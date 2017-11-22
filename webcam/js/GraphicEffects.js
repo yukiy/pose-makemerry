@@ -182,3 +182,4 @@ GraphicEffects.prototype.drawCircle = function(x, y, r, options)
 	this.graphics.drawCircle(x, y, r);
 	this.graphics.endFill();
 }
+

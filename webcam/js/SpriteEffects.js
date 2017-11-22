@@ -26,7 +26,6 @@ SpriteManager.prototype.createSprites = function(list)
 			const sprite = that.createSprite(name, list[name]);
 			that.px.stage.addChild(sprite);
 		}
-		console.log(that);
 		PIXI.loader.reset();
 	})
 } 
