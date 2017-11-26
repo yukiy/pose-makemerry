@@ -1,0 +1,70 @@
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{
+
+}
+
+body {
+	height: 100%;
+}
+
+#local_video{
+	width: 640px; 
+	height: 480px; 
+	border: 1px solid black;
+}
+
+#playback_video{
+	width: 640px;
+	height: 480px;
+	border: 1px solid black;
+	/*display: none;*/ 
+	/*canvasにコピーを表示*/
+}
+
+#effectView {
+	width: 640px;
+	height: 480px;
+	/*
+	width: 960px;
+	height: 720px;
+	*/
+	border: 1px solid black;
+	padding: 0;	
+}
+
+#effectBox {
+	width: 320px;
+	height: 480px;
+	/*
+	width: 960px;
+	height: 720px;
+	*/
+	border: 1px solid black;
+	padding: 0;		
+}
+
+
+#previewArea{
+}
+
+#recordingtime{
+	font-size: 20px;
+}
+
+#upload_file{
+}
+
+td{
+	text-align: center; 
+}
+
+video {
+	padding: 0;
+	margin: 0;	
+}
+
+canvas {
+	padding: 0;
+	margin: 0;
+}
+
+

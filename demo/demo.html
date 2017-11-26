@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="UTF-8">
+	<link href="./css/style.css" rel="stylesheet" type="text/css"/>
+	<script src="./lib/jquery.js"></script>
+	<script src="./lib/pixi.min.js"></script>
+	<script src="./lib/parlin.js"></script>
+	<script src="./lib/Input.js"></script>
+	<script src="./js/Utils.js"></script>
+	<script src="./js/Camera.js"></script>
+	<script src="./js/PoseCalculator.js"></script>
+	<script src="./js/PxView.js"></script>
+	<script src="./js/PxSpriteEffects.js"></script>
+	<script src="./js/PxGraphicEffects.js"></script>
+	<script src="./js/PxEffectKeyMap.js"></script>
+	<script src="./js/PxSetupDrawDemo.js"></script>
+	<script src="./js/CanvasView.js"></script>
+	<script src="./js/CanvasEffects.js"></script>
+	<script src="./js/CanvasSetupDrawDemo.js"></script>
+	<script src="./js/KeyRecorder.js"></script>
+	<script src="./js/demo.js"></script>
+</head>
+
+<body>
+	<button id="start_btn">Start</button>
+	<button id="rec_btn">Rec</button>
+	<input type="file" id="upload_file"/>
+	<div>Frame.<span id="frameNo"></span></div>
+	<div>
+		<span><input type="checkbox" id="deleteMode"/>Delete Mode</span>
+		<table>
+			<tr>
+				<td>a</td>
+				<td>s</td>
+				<td>d</td>
+			</tr>
+			<tr>
+				<td id="aStatus">0</td>
+				<td id="sStatus">0</td>
+				<td id="dStatus">0</td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="previewArea">
+		<table>
+		<tr>
+			<td class="lives">Live</td>
+			<td class="recs">Recorded</td>
+			<td>Pose</td>
+			<td>Effect</td>
+		</tr>
+		<tr>
+			<td class="lives"><video id="local_video" autoplay></video></td>
+			<td class="recs"><video id="playback_video"></video></td>
+			<td id="boneViewTd"></td>
+			<td id="effectViewTd"></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td id="effectViewTd2"></td>
+		</tr>
+	</table>
+	</div>
+
+	<div id="canvasArea"></div>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="UTF-8">
+	<link href="./css/style.css" rel="stylesheet" type="text/css"/>
+	<script src="./lib/jquery.js"></script>
+	<script src="./lib/pixi.min.js"></script>
+	<script src="./lib/parlin.js"></script>
+	<script src="./lib/Input.js"></script>
+	<script src="./js/Utils.js"></script>
+	<script src="./js/Camera.js"></script>
+	<script src="./js/PoseCalculator.js"></script>
+	<script src="./js/PxView.js"></script>
+	<script src="./js/PxSpriteEffects.js"></script>
+	<script src="./js/PxGraphicEffects.js"></script>
+	<script src="./js/PxEffectKeyMap.js"></script>
+	<script src="./js/PxSetupDraw.js"></script>
+	<script src="./js/CanvasView.js"></script>
+	<script src="./js/CanvasEffects.js"></script>
+	<script src="./js/CanvasSetupDraw.js"></script>
+	<script src="./js/KeyRecorder.js"></script>
+	<script src="./js/main.js"></script>
+</head>
+
+<body>
+	<div id="logo"><img src="./img/logo.png"/></div>
+	<button id="about_btn">このサイトについて</button>
+	<br/>
+	<button id="start_btn">録画する</button>
+	<button id="rec_btn">Rec</button>
+	<button id="upload_btn">アップロードする</button>
+	<input type="file" id="upload_file" style="display: none;"/>
+
+	<div style="display: none;">
+		<span><input type="checkbox" id="deleteMode"/>Delete Mode</span>
+	</div>
+
+	<table>
+		<tr>
+			<td>
+				<div id="previewArea">
+					<video id="live_video" autoplay></video>
+					<video id="playback_video"></video>
+					<div id="effectView"></div>
+				</div>
+			</td>
+			<td>
+				<div id="effectBox">
+					<p>手<br>
+					<input type="radio" name="hands" checked> 1
+					<input type="radio" name="hands"> 2
+					</p>
+					<p>足<br>
+					<input type="radio" name="foot" checked> 1
+					<input type="radio" name="foot"> 2
+					</p>
+
+				</div>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
