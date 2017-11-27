@@ -193,6 +193,46 @@ function setEvent()
 			rec.isDeleteMode = false;			
 		}
 	})
+
+
+	$("#effectBox input").change(function(){
+		onEffects();
+	});
+
+	$("#qLabel").css("background-image", "url(./img/stamps/Heart_Eyes_Emoji.png)");
+	$("#wLabel").css("background-image", "url(./img/stamps/emojismile.png)");
+	$("#aLabel").css("background-image", "url(./img/stamps/hands_mglobe.png)");
+	$("#sLabel").css("background-image", "url(./img/stamps/hands_cat.png)");
+
+}
+
+
+function onEffects(){
+	let head = $('input[name=head]:checked').val();
+	let hands = $('input[name=hands]:checked').val();
+	let effects = $('input[name=effects]:checked').val();
+
+	for(i in pxEffectKeyMap.effects){
+		if(pxEffectKeyMap.effects[i].part == "headOverlay"){
+			pxEffectKeyMap.effects[i].enable = false;
+		}
+	}
+	pxEffectKeyMap.effects[head].enable = true;
+
+	for(i in pxEffectKeyMap.effects){
+		if(pxEffectKeyMap.effects[i].part == "handsOverlay"){
+			pxEffectKeyMap.effects[i].enable = false;
+		}
+	}
+	pxEffectKeyMap.effects[hands].enable = true;
+
+	for(i in pxEffectKeyMap.effects){
+		if(pxEffectKeyMap.effects[i].part == "handsEffect"){
+			pxEffectKeyMap.effects[i].enable = false;
+		}
+	}
+	pxEffectKeyMap.effects[effects].enable = true;
+
 }
 
 

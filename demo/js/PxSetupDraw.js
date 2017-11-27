@@ -4,6 +4,7 @@ let boneGraphics;
 let leftHandGraphics;
 let rightHandGraphics;
 let pxSprites;
+let pxEffectKeyMap;
 
 
 function pxSetup()
@@ -16,13 +17,18 @@ function pxSetup()
 	rightHandGraphics	= new PxGraphicEffects(pxView);
 
 	const list = {
-		"mickeyHandLeft" 	: "img/stamps/mickeyglobe_rotate.png",
-		"mickeyHandRight" 	: "img/stamps/mickeyglobe_rotate.png",
-		"smileHead" 		: "img/stamps/emojismile.png"
+		"mickeyHandLeft" 	: "img/stamps/hands_mglobe.png",
+		"mickeyHandRight" 	: "img/stamps/hands_mglobe.png",
+		"catHandLeft" 		: "img/stamps/hands_cat.png",
+		"catHandRight" 		: "img/stamps/hands_cat.png",
+		"smileHead" 		: "img/stamps/emojismile.png",
+		"heartEyesHead" 	: "img/stamps/Heart_Eyes_Emoji.png"
 	};
 	pxSprites = new PxSpriteManager(pxView, list);
 
-	pxEffectMap = new PxEffectKeyMap();
+	pxEffectKeyMap = new PxEffectKeyMap(pxView);
+
+	onEffects();
 
 }
 
@@ -47,12 +53,12 @@ function pxDraw(json)
 		//boneGraphics.drawBones(keypoints, 5);
 
 		if(pxSprites.isImageLoaded == true ){
-			for(key in pxEffectMap.effects){
-				if(pxEffectMap.effects[key].enable){
-					pxEffectMap.effects[key].effect(keypoints);
+			for(key in pxEffectKeyMap.effects){
+				if(pxEffectKeyMap.effects[key].enable){
+					pxEffectKeyMap.effects[key].effect(keypoints);
 				}
 				else{
-					pxEffectMap.effects[key].off(keypoints);
+					pxEffectKeyMap.effects[key].off(keypoints);
 				}
 			}
 

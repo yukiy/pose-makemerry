@@ -1,8 +1,8 @@
-var PxGraphicEffects = function(px)
+var PxGraphicEffects = function(pxView)
 {
-	this.px = px;
+	this.px = pxView;
 	this.graphics;
-	this.create(px);
+	this.create(pxView);
 
 	this.traceLinePoints = [];
 	this.traceCirclePoints = [];

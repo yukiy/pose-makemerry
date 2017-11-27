@@ -47,15 +47,33 @@
 			</td>
 			<td>
 				<div id="effectBox">
-					<p>手<br>
-					<input type="radio" name="hands" checked> 1
-					<input type="radio" name="hands"> 2
-					</p>
-					<p>足<br>
-					<input type="radio" name="foot" checked> 1
-					<input type="radio" name="foot"> 2
-					</p>
-
+					<div id="headSelect" class="overlaySelects">
+						<p>頭</p>
+						<input type="range" id="headSize" class="sizes" min=0.05 max=0.3 value=0.15 step=0.01>
+						<br/>
+						<label id="qLabel">
+							<input type="radio" name="head" value="q" checked>
+						</label>
+						<label id="wLabel">
+							<input type="radio" name="head" value="w">
+						</label>
+					</div>
+					<div id="handsSelect" class="overlaySelects">
+						<p>手</p>
+						<input type="range" id="handsSize" class="sizes" min=0.05 max=0.3 value=0.15 step=0.01>
+						<br/>
+						<label id="aLabel">
+							<input type="radio" name="hands" value="a" checked>
+						</label>
+						<label id="sLabel">
+							<input type="radio" name="hands" value="s">
+						</label>
+					</div>
+					<div id="effectsSelect" class="overlaySelects">
+						<p>エフェクト</p>
+						<input type="radio" name="effects" value="z" checked> 1
+						<input type="radio" name="effects" value="x" > 2
+					</div>
 				</div>
 			</td>
 		</tr>

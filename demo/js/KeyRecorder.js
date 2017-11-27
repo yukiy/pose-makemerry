@@ -2,7 +2,7 @@ var KeyRecorder = function()
 {
 	this.keyb = new Input.Keybord();
 
-	this.addKeyList = ["a", "s", "d"];
+	this.addKeyList = ["q", "a", "s", "d"];
 	for(let i=0; i<this.addKeyList.length; i++){
 		this.keyb.add(this.addKeyList[i]);
 	}

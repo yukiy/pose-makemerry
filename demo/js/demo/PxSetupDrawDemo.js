@@ -4,7 +4,7 @@ let boneGraphics;
 let leftHandGraphics;
 let rightHandGraphics;
 let pxSprites;
-
+let pxEffectKeyMap;
 
 function pxSetup()
 {
@@ -19,10 +19,11 @@ function pxSetup()
 		"mickeyHandLeft" 	: "img/stamps/mickeyglobe_rotate.png",
 		"mickeyHandRight" 	: "img/stamps/mickeyglobe_rotate.png",
 		"smileHead" 		: "img/stamps/emojismile.png"
+		"heartEyesHead" 	: "img/stamps/Heart_Eyes_Emoji.png"
 	};
 	pxSprites = new PxSpriteManager(pxView, list);
 
-	pxEffectMap = new PxEffectKeyMap();
+	pxEffectKeyMap = new PxEffectKeyMap();
 
 }
 
@@ -47,12 +48,12 @@ function pxDraw(json)
 		//boneGraphics.drawBones(keypoints, 5);
 
 		if(pxSprites.isImageLoaded == true ){
-			for(key in pxEffectMap.effects){
+			for(key in pxEffectKeyMap.effects){
 				if(rec.isOnNow(key) == true){
-					pxEffectMap.effects[key].effect(keypoints);
+					pxEffectKeyMap.effects[key].effect(keypoints);
 				}
 				else{
-					pxEffectMap.effects[key].off(keypoints);
+					pxEffectKeyMap.effects[key].off(keypoints);
 				}
 			}
 

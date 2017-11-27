@@ -68,3 +68,29 @@ PoseCalculator.prototype.getAngleFromKeypoints = function(keypoints, partsId1, m
 	const vec2 = { x:x1, y:y1 };
 	return this.getAngle(vec1, vec2, mode);
 }
+
+PoseCalculator.prototype.getBodyLength = function(keypoints)
+{
+	const cThreshold = 0.3;
+	let len;
+	const x1 = keypoints[1]; //---base of neck
+	const y1 = keypoints[1+1];
+	const c1 = keypoints[1+2];
+	const x2 = keypoints[8]; //---bese of right thigh
+	const y2 = keypoints[8+1];
+	const c2 = keypoints[8+2];
+	const x3 = keypoints[11];//---base of left thigh
+	const y3 = keypoints[11+1];
+	const c3 = keypoints[11+2];
+	const a = Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
+	const b = Math.sqrt(Math.pow(x3-x1,2)+Math.pow(y3-y1,2));
+	if(c1 > cThreshold && c2 > cThreshold && c3 > cThreshold){
+		len = (a + b) /2;
+	}else if(c1 > cThreshold && c2 < cThreshold && c3 > cThreshold){
+		len = b;
+	}else if(c1 > cThreshold && c2 > cThreshold && c3 < cThreshold){
+		len = a;
+	}
+	return len;
+}
+
