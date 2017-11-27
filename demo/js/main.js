@@ -170,6 +170,11 @@ function onRecordEnd(blob)
 
 function setEvent()
 {
+	$("#mobilePlay_btn").click(function(){
+		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
+		cam.playbackVideo.volume = 0;
+	});
+
 	$("#start_btn").click(function(){
 		cam.startCamera();
 	});
@@ -193,7 +198,6 @@ function setEvent()
 			rec.isDeleteMode = false;			
 		}
 	})
-
 
 	$("#effectBox input").change(function(){
 		onEffects();
