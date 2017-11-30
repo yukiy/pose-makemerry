@@ -36,7 +36,7 @@ function pxDraw(json)
 		rightHandGraphics.init();					
 	}
 
-	pxView.drawVideoAsBackground(cam.playbackVideo);
+	pxView.drawVideoAsBackground(cam.recordedVideo);
 
 	const people = json.people;
 

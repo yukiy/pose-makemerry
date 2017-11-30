@@ -47,6 +47,22 @@ PxSpriteManager.prototype.createSprite = function(name, imgsrc, x=0, y=0, width=
 }
 
 
+PxSpriteManager.prototype.createVideoSprite = function(name, videosrc, x=0, y=0, width=50, height=50, anchorX=0.5, anchorY=0.5, rotation=0)
+{
+	var texture = PIXI.Texture.fromVideoUrl(videosrc);
+	var sprite = new PIXI.Sprite( texture );
+	sprite.position.set(x, y);
+	sprite.width = width;
+	sprite.height = height;
+	sprite.anchor.x = anchorX;
+	sprite.anchor.y = anchorY;
+	sprite.rotation = rotation;
+
+	//const name = imgsrc.substr(imgsrc.lastIndexOf('/')+1);
+	this[name] = new PxSpriteEffects(this.pxView, sprite);
+	return sprite;	
+}
+
 
 
 /*=========================================================================================================================*/

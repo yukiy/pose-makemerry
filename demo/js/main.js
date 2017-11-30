@@ -1,5 +1,5 @@
 /*-------------------------------*/
-const frameRate = 30;
+const globalFrameRate = 30;
 
 const quickTest = true;
 
@@ -15,8 +15,19 @@ const isAngleJson = false;
 let cam;
 let keyb;
 let rec;
+
+let capturer;
+let isSetExport = false;
+let isExporting = false;
+
+let mainInterval;
+let mainJsonArr = [];
 let globalFrameCount = 0;
-let globalCurrentFrame = 0;
+let globalCurrentFrame = 1;
+let globalTotalFrame;
+let startTime = getTime();
+
+
 
 
 //---サーバーでの処理が終わるとこれが呼ばれる
@@ -24,7 +35,8 @@ function onAnalyzeEnd(res)
 {
 	const name = res.filename;
 	const length = res.length;
-	let jsonarr = [];
+	globalTotalFrame = length;
+	
 
 	//---forloopだと順番がぐちゃぐちゃになるので順番にリクエスト
 	var getAllJson = function(i, callback){
@@ -32,7 +44,7 @@ function onAnalyzeEnd(res)
 		$.getJSON(url, function(res){
 			//if(res && res.people && res.people[0]) console.log(res.people[0]);
 			res.filename = name+"_"+zeroPadding(i,12)+"_keypoints.json";
-			jsonarr.push(res);
+			mainJsonArr.push(res);
 			countfile++;
 			if(countfile < length){
 				getAllJson(countfile, callback);
@@ -50,24 +62,67 @@ function onAnalyzeEnd(res)
 		pxSetup();
 		//canvasSetup();
 
-		setInterval(function()
-		{
-			globalCurrentFrame = cam.getCurrentFrame(cam.playbackVideo);
-
-			rec.updateKeys();
-
-			const json = jsonarr[globalCurrentFrame];
-			if(json && json.people && json.people.length > 0)
-			{
-				pxDraw(json);
-				//canvasDraw(json);
-			}
-
-			globalFrameCount++;
-
-		}, 1000/frameRate);
+		animate();
 	});
 }
+
+
+function animate()
+{
+	requestAnimationFrame( animate );
+	render();
+	if(!isExporting){
+		//---書き出し中以外は、時間ベースでフレームを送る
+		globalCurrentFrame = Math.floor( ( getTime() - startTime ) / ( 1000.0 / globalFrameRate ) % globalTotalFrame );
+	}
+}
+
+function render ()
+{
+	if(isSetExport && globalCurrentFrame == 1)
+	{
+		capturer = new CCapture({
+			format: 'webm',
+			framerate: 30,
+			verbose: true
+		});
+		capturer.start();
+		isExporting = true;
+	}
+
+	rec.updateKeys();
+
+	const json = mainJsonArr[globalCurrentFrame];
+	if(json && json.people && json.people.length > 0)
+	{
+		pxDraw(json);
+		//canvasDraw(json);
+	}
+
+	if(isExporting)
+	{
+		if(globalCurrentFrame < globalTotalFrame){
+			console.log("globalCurrentFrame : " +globalCurrentFrame + "/" + globalTotalFrame);
+			capturer.capture(pxView.getCanvas());
+		}
+		else if(globalCurrentFrame >= globalTotalFrame){
+			console.log("capture done.");
+			capturer.stop();
+			capturer.save();
+			isSetExport = false;
+			isExporting = false;
+		}
+		//---書き出し中以外は、フレーム数ベースでフレームを送る
+		globalCurrentFrame++;
+	}
+
+	globalFrameCount++;
+	if(globalCurrentFrame > globalTotalFrame){
+		globalCurrentFrame = 1;
+	}
+}
+
+
 
 
 //---POSTする関数、ただし、isPostToServerがfalseのときは、POSTしないでサンプルデータを返す
@@ -111,7 +166,7 @@ function uploadFile(files)
 	reader.onloadend = function() {
 
 		cam.playRecordedBlob(file);
-		cam.playbackVideo.volume = 0;
+		cam.recordedVideo.volume = 0;
 
 		const filename = file.name;
 
@@ -167,12 +222,24 @@ function onRecordEnd(blob)
 	}
 }
 
+function exportVideo()
+{
+	let encoder = new Whammy.Video(frameRate);
+	encoder.compile(function(output){
+		var url = (window.webkitURL || window.URL).createObjectURL(output);
+
+		const anchor = document.getElementById('download_link');
+		anchor.download = 'recorded.webm'; // ファイル名
+		anchor.href = url;
+	})
+}
+
 
 function setEvent()
 {
 	$("#mobilePlay_btn").click(function(){
 		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
-		cam.playbackVideo.volume = 0;
+		cam.recordedVideo.volume = 0;
 	});
 
 	$("#start_btn").click(function(){
@@ -201,6 +268,20 @@ function setEvent()
 
 	$("#effectBox input").change(function(){
 		onEffects();
+	});
+
+	let isFirst = true;
+	$("#export_btn").click(function(){
+		isSetExport = true;
+		// if(isFirst){
+		// 	cam.recordedVideo.pause();
+		// 	cam.recordedVideo.autoplay = false;
+		// 	cam.recordedVideo.loop = false;
+		// 	globalCurrentFrame = 0;
+		// 	clearInterval(mainInterval);
+		// 	isFirst = false;
+		// }
+		//exportVideo();
 	});
 
 	$("#qLabel").css("background-image", "url(./img/stamps/Heart_Eyes_Emoji.png)");
@@ -241,6 +322,8 @@ function onEffects(){
 
 
 $(function() {
+	initRequestAnimationFrame();
+	
 	cam = new Camera();
 	cam.onRecordEnd = onRecordEnd;
 
@@ -249,9 +332,9 @@ $(function() {
 	if(quickTest)
 	{	
 		$("#live_video").hide();
-		$("#playback_video").hide();
+		$("#recorded_video").hide();
 		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
-		cam.playbackVideo.volume = 0;
+		cam.recordedVideo.volume = 0;
 		const res = $.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}');
 		onAnalyzeEnd(res);
 	}

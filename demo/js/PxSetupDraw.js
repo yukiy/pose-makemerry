@@ -28,20 +28,29 @@ function pxSetup()
 
 	pxEffectKeyMap = new PxEffectKeyMap(pxView);
 
-	onEffects();
+	//pxView.setVideoAsBackground("./movies_mp4/"+testFilename+".mp4");
+	//globalCurrentFrame = pxView.getBackgroundVideoCurrentFrame();
+	//pxView.bgVideoTexture.loop = true;
 
+	onEffects();
 }
 
 
 function pxDraw(json)
 {
-	if(globalCurrentFrame == 0){
+	if(globalCurrentFrame == 1){
 		boneGraphics.init();
 		leftHandGraphics.init();
 		rightHandGraphics.init();					
 	}
 
-	pxView.drawVideoAsBackground(cam.playbackVideo);
+	boneGraphics.clear();
+	leftHandGraphics.clear();
+	rightHandGraphics.clear();
+
+	//pxView.copyVideoAsBackground(cam.recordedVideo);
+	//pxView.updateBackgroundVideo();
+	pxView.updateBackgroundImage(globalCurrentFrame, "./movies_jpg/test/test_");
 
 	const people = json.people;
 
@@ -70,9 +79,11 @@ function pxDraw(json)
 	}
 
 	pxView.renderer.render(pxView.stage);
-	boneGraphics.clear();
-	leftHandGraphics.clear();
-	rightHandGraphics.clear();
+
+	// if(globalCurrentFrame == globalTotalFrame){
+	// 	pxView.setBackgroundVideoCurrentTime(0);
+	// 	globalCurrentFrame = 1;
+	// }
 }
 
 

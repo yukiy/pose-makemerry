@@ -8,7 +8,7 @@ function canvasSetup()
 
 function canvasDraw (json)
 {
-	sfxView.drawVideo(cam.playbackVideo);
+	sfxView.drawVideo(cam.recordedVideo);
 	boneView.drawBackground("#aaaaaa");
 	const people = json.people;
 

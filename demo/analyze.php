@@ -15,6 +15,10 @@
     $filename = pathinfo($fullfilename, PATHINFO_FILENAME);
     $ext      = pathinfo($fullfilename, PATHINFO_EXTENSION);
 
+
+//todo TRY convert to jpg
+//ffmpeg -i movies_mp4/test.mp4 -qscale:v 2 -huffman optimal movies_jpg/test3/test_%04d.jpg
+
 	if($ext == "mp4"){
 		$outfilename = $outMovieFilePath.$filename.".mp4";
 	    file_put_contents ($outfilename, $blob );

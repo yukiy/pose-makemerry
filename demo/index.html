@@ -8,6 +8,7 @@
 	<script src="./lib/pixi.min.js"></script>
 	<script src="./lib/parlin.js"></script>
 	<script src="./lib/Input.js"></script>
+	<script src="./lib/CCapture.all.min.js"></script>
 	<script src="./js/Utils.js"></script>
 	<script src="./js/Camera.js"></script>
 	<script src="./js/PoseCalculator.js"></script>
@@ -32,6 +33,10 @@
  -->
  	<button id="upload_btn">アップロードする</button>
 	<input type="file" id="upload_file" style="display: none;"/>
+	
+	<button id="export_btn">Export</button>
+	<a id="download_link">donwload</a>
+
 
 	<p>
 		<button id="mobilePlay_btn">start</button>
@@ -46,7 +51,7 @@
 			<td>
 				<div id="previewArea">
 					<video id="live_video" autoplay></video>
-					<video id="playback_video"></video>
+					<video id="recorded_video"></video>
 					<div id="effectView"></div>
 				</div>
 			</td>

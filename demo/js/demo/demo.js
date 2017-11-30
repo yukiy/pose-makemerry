@@ -52,7 +52,7 @@ function onAnalyzeEnd(res)
 
 		setInterval(function()
 		{
-			globalCurrentFrame = cam.getCurrentFrame(cam.playbackVideo);
+			globalCurrentFrame = cam.getCurrentFrame(cam.recordedVideo);
 
 			rec.updateKeys();
 
@@ -120,7 +120,7 @@ function uploadFile(files)
 	reader.onloadend = function() {
 
 		cam.playRecordedBlob(file);
-		cam.playbackVideo.volume = 0;
+		cam.recordedVideo.volume = 0;
 
 		const filename = file.name;
 
@@ -217,7 +217,7 @@ $(function() {
 		$(".lives").hide();
 		$(".recs").show();
 		cam.playRecordedUrl("./movies_mp4/"+testFilename+".mp4");
-		cam.playbackVideo.volume = 0;
+		cam.recordedVideo.volume = 0;
 		const res = $.parseJSON('{"filename":"'+testFilename+'","length":'+testFileLength+'}');
 		onAnalyzeEnd(res);
 	}

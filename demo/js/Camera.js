@@ -12,7 +12,7 @@ var Camera = function()
 	this.countIntv;
 	this.playbackPlayIntv;
 	this.localVideo = document.getElementById("live_video");
-	this.playbackVideo = document.getElementById("playback_video");
+	this.recordedVideo = document.getElementById("recorded_video");
 
 	this.countdownDivId = "#recordingtime";
 
@@ -103,7 +103,8 @@ Camera.prototype.startRecording = function()
 	});
 }
 
-Camera.prototype.onRecordEnd = function(blob){}
+Camera.prototype.onRecordEnd = function(blob)
+{}
 
 
 Camera.prototype.stopRecording = function()
@@ -148,19 +149,19 @@ Camera.prototype.playRecordedBlob = function(blob)
 Camera.prototype.playRecordedUrl = function(url)
 {
 	const that = this;
-	if (this.playbackVideo.src) {
-		window.URL.revokeObjectURL(this.playbackVideo.src); // 解放
-		this.playbackVideo.src = null;
+	if (this.recordedVideo.src) {
+		window.URL.revokeObjectURL(this.recordedVideo.src); // 解放
+		this.recordedVideo.src = null;
 	}
-	this.playbackVideo.src = url;
-	this.playbackVideo.loop = true;
-	this.playbackVideo.play();
+	this.recordedVideo.src = url;
+	this.recordedVideo.loop = true;
+	this.recordedVideo.play();
 
 	/*more controlled but heavy*/	
 	// setInterval(function(){
-	// 	that.playbackVideo.currentTime = that.playbackFrame/30;
+	// 	that.recordedVideo.currentTime = that.playbackFrame/30;
 	// 	that.playbackFrame++;
-	// 	if(that.playbackVideo.currentTime >= that.playbackVideo.duration){
+	// 	if(that.recordedVideo.currentTime >= that.recordedVideo.duration){
 	// 		that.playbackFrame = 0;
 	// 	}
 	// },1000/30);
@@ -172,10 +173,16 @@ Camera.prototype.getCurrentFrame = function(video)
 	return Math.floor(video.currentTime * this.frameRate);
 }
 
+Camera.prototype.setCurrentFrame = function(video, frame)
+{
+	video.currentTime = frame / this.frameRate;
+	return Math.floor(video.currentTime * this.frameRate);
+}
+
 //---unused
 Camera.prototype.download = function()
 {
 	const anchor = document.getElementById('download_link');
 	anchor.download = 'recorded.webm'; // ファイル名
-	anchor.href = this.playbackVideo.src;
+	anchor.href = this.recordedVideo.src;
 }

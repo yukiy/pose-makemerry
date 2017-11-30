@@ -6,9 +6,12 @@ var PxView = function(elId, width, height)
 	this.height;
 
 	this.background;
-	this.bgVideoTexture;
-	this.bgVideoSource;
 
+	this.bgVideoTexture;
+	this.frameRate = globalFrameRate;
+	if(this.frameRate == undefined) this.frameRate = 30;
+
+	this.elId = elId;
 	this.setupStage(elId, width, height);
 
 	this.traceCirclePoints = [];
@@ -24,13 +27,26 @@ PxView.prototype.setupStage = function(elId, width, height)
 	this.height = height;
 	this.stage = new PIXI.Container();
 	this.renderer = PIXI.autoDetectRenderer(
-		width, height,
-		{antialias: true, transparent: false, resolution: 1, preserveDrawingBuffer: false}
-	);
+		width, height,{
+		antialias: true,
+		transparent: false,
+		resolution: 1,
+		preserveDrawingBuffer: false
+	});
 	document.getElementById(elId).appendChild(this.renderer.view);
 	this.renderer.autoResize = true;
 	this.renderer.resize(width, height);
 	this.background = this.createBackground();
+}
+
+PxView.prototype.getCanvas = function()
+{
+	return this.renderer.view;
+}
+
+PxView.prototype.getContext = function()
+{
+	return this.renderer.view.getContext("webgl");
 }
 
 
@@ -45,6 +61,14 @@ PxView.prototype.createBackground = function()
 }
 
 
+PxView.prototype.updateBackgroundImage = function(frame, imgsrcdir)
+{
+	const filename = imgsrcdir + zeroPadding(frame, 4) + ".jpg";
+	const imageTexture = PIXI.Texture.fromImage(filename);
+	this.background.texture = imageTexture;
+}
+
+
 PxView.prototype.copyCanvasAsBackground = function(canvasEl)
 {
 	const canvasTexture = PIXI.Texture.fromCanvas(canvasEl);
@@ -52,7 +76,7 @@ PxView.prototype.copyCanvasAsBackground = function(canvasEl)
 	this.background.texture.update();
 }
 
-PxView.prototype.drawVideoAsBackground = function(videoEl)
+PxView.prototype.copyVideoAsBackground = function(videoEl)
 {
 	const videoTexture = PIXI.Texture.fromVideo(videoEl);
 	this.background.texture = videoTexture;
@@ -60,6 +84,35 @@ PxView.prototype.drawVideoAsBackground = function(videoEl)
 	// var video = videoTexture.baseTexture.source;
 	// video.currentTime = 0;
 }
+
+PxView.prototype.setVideoAsBackground = function(videosrc)
+{
+	//var videoTexture = PIXI.VideoBaseTexture.fromUrl(videosrc);
+	var videoTexture = PIXI.Texture.fromVideoUrl(videosrc);
+	this.background.texture = videoTexture;
+	this.bgVideoTexture = videoTexture.baseTexture.source;
+}
+
+PxView.prototype.updateBackgroundVideo = function()
+{
+	this.background.texture.update();
+}
+
+PxView.prototype.getBackgroundVideoCurrentTime = function()
+{
+	return this.bgVideoTexture.currentTimee;
+}
+
+PxView.prototype.getBackgroundVideoCurrentFrame = function()
+{
+	return Math.floor(this.bgVideoTexture.currentTime * this.frameRate);
+}
+
+PxView.prototype.setBackgroundVideoCurrentTime = function(time)
+{
+	this.bgVideoTexture.currentTime = time;
+}
+
 
 PxView.prototype.addFilter = function(target, options)
 {
